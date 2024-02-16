@@ -10,7 +10,7 @@ counter = 0 -- for drawing purposes
 player_score=0
 af = 0 -- cursor anim frame
 frame_counter = 1
-stage = 0
+stage = 0 
 
 function draw_card(x,y,n,m)
  if m>1 then pal(8,0)
@@ -70,7 +70,11 @@ function _draw()
 	draw_card_back(40,10)
 	draw_card_back(40,8)
 	draw_card_back(40,6)
-	foreach(hand,draw_player_cards)
+	-- foreach(hand,draw_player_cards)
+	for k,v in pairs(hand) do
+	 draw_card(0+k*11,100,v[1],v[2])
+	end
+	
 	-- player counter
 	print(count_score(hand),64,96,7)
  -- option selection window
