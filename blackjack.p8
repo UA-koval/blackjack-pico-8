@@ -4,13 +4,21 @@ __lua__
 -- blackjack
 -- by koval
 
+-- game logic vars
 hand = {}
 dealer = {}
-counter = 0 -- for drawing purposes
 player_score=0
-af = 0 -- cursor anim frame
+dealer_score=0
+
+-- technical vars
 frame_counter = 1
 stage = 0 
+hidden_card = false
+
+-- objects coords
+dealerx=10 dealery=10
+handx=10 handy=100
+deckx=100 decky=10
 
 function draw_card(x,y,n,m)
  if m>1 then pal(8,0)
@@ -24,12 +32,6 @@ end
 function draw_card_back(x,y)
  sspr(8,0,11,16,x,y)
  sspr(8,16,7,12,x+2,y+2)
-end
-
-function draw_player_cards(c)
-	if (counter>#hand-1) counter=0
- draw_card(counter*11,100,c[1],c[2])
- counter+=1
 end
 
 function generate_card()
@@ -67,25 +69,22 @@ end
 
 function _draw()
 	rectfill(0,0,128,128,3)
-	draw_card_back(40,10)
-	draw_card_back(40,8)
-	draw_card_back(40,6)
-	-- foreach(hand,draw_player_cards)
+	for i=0,3 do
+	 draw_card_back(deckx,decky-i*2)
+	end
+
 	for k,v in pairs(hand) do
 	 draw_card(0+k*11,100,v[1],v[2])
 	end
-	
+	for k,v in pairs(dealer) do
+	 draw_card(0+k*11,10,v[1],v[2])
+	end
+	if (hidden_card)	draw_card_back(dealerx+11,dealery)
 	-- player counter
 	print(count_score(hand),64,96,7)
- -- option selection window
- -- rectfill(7,31,35,65,7)
-	-- rectfill(8,32,34,64,1)
-	-- print("hit",10,34,7)
-	-- print("stay",10,42)
-	-- print("double",10,50)
-	-- print("fold",10,58)
-	-- spr(35+af,0,34) af+=1
-	-- if (af>8) af=0
+	-- dealer counter
+print(count_score(dealer),64,10,7)
+
 end
 
 function _update()
@@ -93,9 +92,21 @@ function _update()
  if frame_counter % 20 ==0 then
   -- stage 1: give player cards
   if stage==0 then
-   if (#hand<2) add(hand,generate_card())
+   if (#hand<2) then
+    add(hand,generate_card())
+   else stage+=1 end
+  -- stage 2: give dealer card
+  elseif stage==1 then
+   if (#dealer<1) then
+    add(dealer,generate_card())
+   elseif hidden_card==false then
+   	hidden_card = true 
+   else stage+=1 end
   end
-  
+ end
+ 
+ if stage==3 then
+  -- todo: allow player input
  end
  
  frame_counter+=1
@@ -106,7 +117,7 @@ __gfx__
 00000000017777777100000080880000800800000008000080800800800800008008000080080000800000008000000008080000800800008008000080080000
 00700700177777777710000088800000800800000008000080800800088800000880000000800000888000008880000080080000008000000080000080080000
 00077000177777777710000080880000800800000008000080800800000800008008000000800000800800000008000088880000000800000800000088880000
-00077000177777777710000080080000088000008008000080800800000800008008000008000000800800008008000000080000800800008000000080080000
+00077000177777777710000080080000088000008008000080800800800800008008000008000000800800008008000000080000800800008000000080080000
 00700700177777777710000080080000008800000880000080088000088000000880000008000000088000000880000000080000088000008888000080080000
 00000000177777777710000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000177777777710000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
