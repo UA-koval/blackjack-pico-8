@@ -14,13 +14,14 @@ dealer_score=0
 frame_counter = 1
 stage = 0 
 hidden_card = false
-item=0 item_lim=4
+item=0 item_lim=3
 
 -- objects coords
 dealerx=10 dealery=10
 handx=10   handy=100
 deckx=100  decky=10
-menux=10   menuy=32
+menux=20   menuy=32
+sizex=40   sizey=40
 
 -- graphics vars
 cursor_anim_frame = 0
@@ -92,7 +93,19 @@ function _draw()
 	print(count_score(dealer),64,10,7)
 	
 	if draw_window then
-		spr(35+cursor_anim_frame,menux,menuy+item*10)
+	 -- window background
+	 line(menux,menuy-1,menux+sizex,menuy-1,7)
+	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
+	 line(menux-1,menuy,menux-1,menuy+sizey,7)
+	 line(menux+sizex+1,menuy,menux+sizex+1,menuy+sizey,7)
+  rectfill(menux,menuy,menux+sizex,menuy+sizey,1)
+	 -- text
+	 print("hit",menux+2,menuy+2,7)
+	 print("stay",menux+2,menuy+10+2,7)
+	 print("double",menux+2,menuy+20+2,7)
+	 print("fold",menux+2,menuy+30+2,7)
+	 -- cursor
+		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
 		if (cursor_anim_frame>7) cursor_anim_frame=-1
 		cursor_anim_frame+=1
 		
