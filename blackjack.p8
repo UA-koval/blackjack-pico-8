@@ -1,6 +1,13 @@
 pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
+-- blackjack
+-- by koval
+
+hand = {}
+dealer = {}
+counter = 0
+
 function draw_card(x,y,n,m)
  if m>1 then pal(8,0)
  else pal() end
@@ -15,19 +22,30 @@ function draw_card_back(x,y)
  sspr(8,16,7,12,x+2,y+2)
 end
 
+function draw_player_cards(c)
+	if (counter>#hand-1) counter=0
+ draw_card(counter*11,100,c[1],c[2])
+ counter+=1
+end
+
+-- main game functions --
+-------------------------
+function _init()
+ for i=0,10 do
+  add(hand,{flr(rnd(13)),flr(rnd(4))})
+ end
+end
+
 function _draw()
-rectfill(0,0,128,128,3)
-draw_card_back(20,10)
-draw_card_back(20,8)
-draw_card_back(20,6)
+	rectfill(0,0,128,128,3)
+	draw_card_back(40,10)
+	draw_card_back(40,8)
+	draw_card_back(40,6)
+	foreach(hand,draw_player_cards)
 end
 
 function _update()
- if (btn(0)) camx-=1
- if (btn(1)) camx+=1
- if (btn(2)) camy-=1
- if (btn(3)) camy+=1
- camera(camx,camy)
+ 
 end
 
 __gfx__
