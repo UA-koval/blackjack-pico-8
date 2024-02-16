@@ -14,11 +14,16 @@ dealer_score=0
 frame_counter = 1
 stage = 0 
 hidden_card = false
+item=0 item_lim=4
 
 -- objects coords
 dealerx=10 dealery=10
 handx=10 handy=100
 deckx=100 decky=10
+
+-- graphics vars
+cursor_anim_frame = 0
+draw_window=false
 
 function draw_card(x,y,n,m)
  if m>1 then pal(8,0)
@@ -83,7 +88,11 @@ function _draw()
 	-- player counter
 	print(count_score(hand),64,96,7)
 	-- dealer counter
-print(count_score(dealer),64,10,7)
+	print(count_score(dealer),64,10,7)
+	
+	if draw_window then
+		spr(35,10,64)
+	end
 
 end
 
@@ -105,8 +114,14 @@ function _update()
   end
  end
  
- if stage==3 then
-  -- todo: allow player input
+ if stage==2 then
+  -- exit point: blackjack
+  -- if (count_score(hand)==21) stop()
+  draw_window=true
+  if btn(3) and item<item_lim then
+  item+=1 end
+  if btn(2) and item>1 then
+  item+=1 end
  end
  
  frame_counter+=1
