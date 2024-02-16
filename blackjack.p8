@@ -142,6 +142,9 @@ function _update()
   item-=1 end
  end
  
+ -- todo:
+ -- if confirm pressed
+ -- do somethig
  frame_counter+=1
 end
 
