@@ -28,11 +28,14 @@ function draw_player_cards(c)
  counter+=1
 end
 
+function generate_card()
+ return {flr(rnd(13)),flr(rnd(4))}
+end
 -- main game functions --
 -------------------------
 function _init()
  for i=0,10 do
-  add(hand,{flr(rnd(13)),flr(rnd(4))})
+  add(hand,generate_card())
  end
 end
 
