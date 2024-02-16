@@ -9,7 +9,8 @@ dealer = {}
 counter = 0 -- for drawing purposes
 player_score=0
 af = 0 -- cursor anim frame
-
+frame_counter = 1
+stage = 0
 
 function draw_card(x,y,n,m)
  if m>1 then pal(8,0)
@@ -61,9 +62,7 @@ end
 -- main game functions --
 -------------------------
 function _init()
- add(hand,generate_card())
- add(hand,generate_card())
- add(hand,{0,1})
+
 end
 
 function _draw()
@@ -75,18 +74,27 @@ function _draw()
 	-- player counter
 	print(count_score(hand),64,96,7)
  -- option selection window
- rectfill(7,31,35,65,7)
-	rectfill(8,32,34,64,1)
-	print("hit",10,34,7)
-	print("stay",10,42)
-	print("double",10,50)
-	print("fold",10,58)
-	spr(35+af,0,34) af+=1
-	if (af>8) af=0
+ -- rectfill(7,31,35,65,7)
+	-- rectfill(8,32,34,64,1)
+	-- print("hit",10,34,7)
+	-- print("stay",10,42)
+	-- print("double",10,50)
+	-- print("fold",10,58)
+	-- spr(35+af,0,34) af+=1
+	-- if (af>8) af=0
 end
 
 function _update()
  
+ if frame_counter % 20 ==0 then
+  -- stage 1: give player cards
+  if stage==0 then
+   if (#hand<2) add(hand,generate_card())
+  end
+  
+ end
+ 
+ frame_counter+=1
 end
 
 __gfx__
