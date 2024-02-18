@@ -230,6 +230,10 @@ if stage==2 then
  end
 end
 
+
+if stage==6 then
+	if (btnp(4)) stage=-1
+end
 -- result screen backend
 
 
