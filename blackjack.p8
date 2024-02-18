@@ -29,6 +29,12 @@ sizex=40   sizey=40
 -- graphics vars
 cursor_anim_frame = 0
 
+
+-- game logic functions
+function generate_card()
+ return {flr(rnd(13)),flr(rnd(4))}
+end
+
 function hit(h)
 	add(h,generate_card())
 	a = count_score(h)
@@ -42,27 +48,10 @@ function hit(h)
 	else return 2 end
 end
 
-function draw_card(x,y,n,m)
- if m>1 then pal(8,0)
- else pal() end
- n+=1
-  -- blank card
- sspr(8,0,11,16,x,y)
-  -- value
- sspr(128-n*8,0,6,6,x+2,y+2)
-  -- type
- sspr(24+m*8,8,5,5,x+3,y+9)
-end
-
-function draw_card_back(x,y)
- sspr(8,0,11,16,x,y)
- sspr(8,16,7,12,x+2,y+2)
-end
-
-function generate_card()
- return {flr(rnd(13)),flr(rnd(4))}
-end
-
+-- score counting functions
+--  they are unnessesary
+--  complicated, i have no
+--  idea how to rewrite it
 function add_hard_score(card)
  val=0
  if (card[1]==0) then 
@@ -85,31 +74,18 @@ function count_score(h)
  foreach(h,add_soft_score)
  return score
 end
--- main game functions --
--------------------------
-function _init()
 
-end
-
-function _draw()
-	rectfill(0,0,128,128,3)
-	for i=0,3 do
-	 draw_card_back(deckx,decky-i*2)
-	end
-	if (hidden_card)	draw_card_back(dealerx+11,dealery)
-
+-- draw functions
+function draw_all_cards()
 	for k,v in pairs(hand) do
 	 draw_card(0+k*11,100,v[1],v[2])
 	end
 	for k,v in pairs(dealer) do
 	 draw_card(0+k*11,10,v[1],v[2])
 	end
-	-- player counter
-	print(count_score(hand),64,96,7)
-	-- dealer counter
-	print(count_score(dealer),64,10,7)
-	
-	if stage==2 then
+end
+
+function draw_game_window()
 	 -- window background
 	 line(menux,menuy-1,menux+sizex,menuy-1,7)
 	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
@@ -125,13 +101,48 @@ function _draw()
 		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
 		if (cursor_anim_frame>7) cursor_anim_frame=-1
 		cursor_anim_frame+=1
-		
+end
+
+function draw_card(x,y,n,m)
+ if m>1 then pal(8,0)
+ else pal() end
+ n+=1
+  -- blank card
+ sspr(8,0,11,16,x,y)
+  -- value
+ sspr(128-n*8,0,6,6,x+2,y+2)
+  -- type
+ sspr(24+m*8,8,5,5,x+3,y+9)
+end
+
+function draw_card_back(x,y)
+ sspr(8,0,11,16,x,y)
+ sspr(8,16,7,12,x+2,y+2)
+end
+
+-- main game functions --
+-------------------------
+function _init()
+
+end
+
+function _draw()
+	rectfill(0,0,128,128,3)
+	for i=0,3 do
+	 draw_card_back(deckx,decky-i*2)
 	end
+	if (hidden_card)	draw_card_back(dealerx+11,dealery)
+ draw_all_cards()
+	-- player counter
+	print(count_score(hand),64,96,7)
+	-- dealer counter
+	print(count_score(dealer),64,10,7)
+	-- stage 2 ui for input
+	if (stage==2) draw_game_window()
 
 
 -- debug prints
 print(stage,0,0,7)
-print(diff, 0,8,7)
 print(game_result, 0,16,7)
 end
 
@@ -208,9 +219,23 @@ diff = count_score(hand) -
 		game_result=2
 	end
 stage+=1
-end
-print("ggs",60,60)
-end
+-- stage 5: payout
+--  0 - win
+--  1 - loss
+--  2 - draw
+elseif stage==5 then
+ if game_result==0 then
+  if (blackjack) bet*=1.5
+	 bank+=flr(bet)
+	elseif game_result==1 then
+	 bank-=bet
+	end
+stage+=1
+-- stage 6: game result screen
+end -- stage selector
+
+
+end --_update()
 
 __gfx__
 00000000001111111000000080080000088000000088800080088000088000000880000088880000088000008888000000880000088000000880000008800000
