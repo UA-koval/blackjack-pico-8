@@ -4,6 +4,11 @@ __lua__
 -- blackjack
 -- by koval
 
+-- todo:
+-- - poker chips for bet ui
+-- - game result ui
+-- - game start ui
+
 -- game logic vars
 bet = 0
 bank = 100
@@ -15,7 +20,7 @@ game_result=0
 
 -- technical vars
 frame_counter = 1
-stage = 0 
+stage = -1
 hidden_card = false
 item=0 item_lim=3
 
@@ -25,6 +30,9 @@ handx=10   handy=100
 deckx=100  decky=10
 menux=20   menuy=32
 sizex=40   sizey=40
+-- bet selection window
+betmenux=31   betmenuy=32
+betsizex=66   betsizey=40
 
 -- graphics vars
 cursor_anim_frame = 0
@@ -85,6 +93,24 @@ function draw_all_cards()
 	end
 end
 
+function draw_card(x,y,n,m)
+ if m>1 then pal(8,0)
+ else pal() end
+ n+=1
+  -- blank card
+ sspr(8,0,11,16,x,y)
+  -- value
+ sspr(128-n*8,0,6,6,x+2,y+2)
+  -- type
+ sspr(24+m*8,8,5,5,x+3,y+9)
+end
+
+function draw_card_back(x,y)
+ sspr(8,0,11,16,x,y)
+ sspr(8,16,7,12,x+2,y+2)
+end
+
+-- draw ui
 function draw_game_window()
 	 -- window background
 	 line(menux,menuy-1,menux+sizex,menuy-1,7)
@@ -103,22 +129,24 @@ function draw_game_window()
 		cursor_anim_frame+=1
 end
 
-function draw_card(x,y,n,m)
- if m>1 then pal(8,0)
- else pal() end
- n+=1
-  -- blank card
- sspr(8,0,11,16,x,y)
-  -- value
- sspr(128-n*8,0,6,6,x+2,y+2)
-  -- type
- sspr(24+m*8,8,5,5,x+3,y+9)
-end
-
-function draw_card_back(x,y)
- sspr(8,0,11,16,x,y)
- sspr(8,16,7,12,x+2,y+2)
-end
+function draw_bet_window()
+  -- todo: graphical poker chips
+	 -- window background
+	 line(betmenux,betmenuy-1,betmenux+betsizex,betmenuy-1,7)
+	 line(betmenux,betmenuy+betsizey+1,betmenux+betsizex,betmenuy+betsizey+1,7)
+	 line(betmenux-1,betmenuy,betmenux-1,betmenuy+betsizey,7)
+	 line(betmenux+betsizex+1,betmenuy,betmenux+betsizex+1,betmenuy+betsizey,7)
+  rectfill(betmenux,betmenuy,betmenux+betsizex,betmenuy+betsizey,1)
+	 -- text
+	 print("choose your bet",betmenux+2,betmenuy+2,7)
+	 print("➡️ + 1   ⬅️ - 1",betmenux+2,betmenuy+10+2,7)
+	 print("⬆️ + 10  ⬇️ - 10",betmenux+2,betmenuy+20+2,7)
+	 print(bet,betmenux+32,betmenuy+30+2,7)
+	 -- cursor
+		spr(35+cursor_anim_frame,betmenux-10,betmenuy+30)
+		if (cursor_anim_frame>7) cursor_anim_frame=-1
+		cursor_anim_frame+=1
+end 
 
 -- main game functions --
 -------------------------
@@ -128,7 +156,7 @@ end
 
 function _draw()
 	rectfill(0,0,128,128,3)
-	for i=0,3 do
+	for i=0,2 do
 	 draw_card_back(deckx,decky-i*2)
 	end
 	if (hidden_card)	draw_card_back(dealerx+11,dealery)
@@ -139,8 +167,9 @@ function _draw()
 	print(count_score(dealer),64,10,7)
 	-- stage 2 ui for input
 	if (stage==2) draw_game_window()
-
-
+ if (stage==-1) draw_bet_window()
+ print("bank:"..bank,96,112)
+ print("bet:"..bet,100,120)
 -- debug prints
 print(stage,0,0,7)
 print(game_result, 0,16,7)
@@ -149,7 +178,30 @@ end
 function _update()
 frame_counter+=1
 
--- player input
+-- ui backend for bet window
+if stage==-1 then
+ if btnp(0) then
+  if bet>0 then
+  	bet-=1
+  end
+ elseif btnp(1) then
+  if bet<bank then
+  	bet+=1
+  end
+ elseif btnp(3) then
+  if bet>9 then
+  	bet-=10
+  end
+ elseif btnp(2) then
+  if bet+9<bank then
+  	bet+=10
+  end
+ elseif btnp(4) then
+  stage+=1
+ end
+end
+
+-- player game input
 if stage==2 then
  if (count_score(hand)==21) then
  	blackjack=true stage=5
