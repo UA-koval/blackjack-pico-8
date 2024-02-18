@@ -8,6 +8,7 @@ __lua__
 -- - poker chips for bet ui
 -- - game result ui
 -- - game start ui
+-- - restart game
 
 -- game logic vars
 bet = 0
@@ -39,6 +40,12 @@ cursor_anim_frame = 0
 tempbet = 0
 
 -- game logic functions
+function reset_game()
+hand = {}
+dealer = {}
+stage=-1 
+end
+
 function generate_card()
  return {flr(rnd(13)),flr(rnd(4))}
 end
@@ -232,7 +239,7 @@ end
 
 
 if stage==6 then
-	if (btnp(4)) stage=-1
+	if (btnp(4)) reset_game()
 end
 -- result screen backend
 
