@@ -36,7 +36,7 @@ betsizex=66   betsizey=40
 
 -- graphics vars
 cursor_anim_frame = 0
-
+tempbet = 0
 
 -- game logic functions
 function generate_card()
@@ -141,7 +141,7 @@ function draw_bet_window()
 	 print("choose your bet",betmenux+2,betmenuy+2,7)
 	 print("➡️ + 1   ⬅️ - 1",betmenux+2,betmenuy+10+2,7)
 	 print("⬆️ + 10  ⬇️ - 10",betmenux+2,betmenuy+20+2,7)
-	 print(bet,betmenux+32,betmenuy+30+2,7)
+	 print(tempbet,betmenux+32,betmenuy+30+2,7)
 	 -- cursor
 		spr(35+cursor_anim_frame,betmenux-10,betmenuy+30)
 		if (cursor_anim_frame>7) cursor_anim_frame=-1
@@ -178,25 +178,28 @@ end
 function _update()
 frame_counter+=1
 
--- ui backend for bet window
+-- ui backend
+--  ui backend for bet window
 if stage==-1 then
  if btnp(0) then
-  if bet>0 then
-  	bet-=1
+  if tempbet>0 then
+  	tempbet-=1
   end
  elseif btnp(1) then
-  if bet<bank then
-  	bet+=1
+  if tempbet<bank then
+  	tempbet+=1
   end
  elseif btnp(3) then
-  if bet>9 then
-  	bet-=10
+  if tempbet>9 then
+  	tempbet-=10
   end
  elseif btnp(2) then
-  if bet+9<bank then
-  	bet+=10
+  if tempbet+9<bank then
+  	tempbet+=10
   end
  elseif btnp(4) then
+  bet=tempbet
+  bank-=bet
   stage+=1
  end
 end
@@ -226,6 +229,9 @@ if stage==2 then
 	 end
  end
 end
+
+-- result screen backend
+
 
 -- from this point on,
 -- program only executes
@@ -277,11 +283,11 @@ stage+=1
 --  2 - draw
 elseif stage==5 then
  if game_result==0 then
-  if (blackjack) bet*=1.5
+  if blackjack then bet*=2.5
+  else bet*=2 end
 	 bank+=flr(bet)
-	elseif game_result==1 then
-	 bank-=bet
 	end
+bet=0
 stage+=1
 -- stage 6: game result screen
 end -- stage selector
