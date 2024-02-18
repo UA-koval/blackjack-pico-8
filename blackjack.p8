@@ -5,9 +5,13 @@ __lua__
 -- by koval
 
 -- game logic vars
+bet = 0
+bank = 100
 hand = {}
 dealer = {}
 score=0
+blackjack, fold = false,false
+game_result=0
 
 -- technical vars
 frame_counter = 1
@@ -24,13 +28,17 @@ sizex=40   sizey=40
 
 -- graphics vars
 cursor_anim_frame = 0
-draw_window = false
 
 function hit(h)
 	add(h,generate_card())
 	a = count_score(h)
 	if a < 21 then return 0
-	elseif a > 21 then return 1
+	elseif a > 21 then 
+		if h==hand then 
+		 game_result=1 stage=5
+		else
+		 game_result=0 stage=5
+		end
 	else return 2 end
 end
 
@@ -88,6 +96,7 @@ function _draw()
 	for i=0,3 do
 	 draw_card_back(deckx,decky-i*2)
 	end
+	if (hidden_card)	draw_card_back(dealerx+11,dealery)
 
 	for k,v in pairs(hand) do
 	 draw_card(0+k*11,100,v[1],v[2])
@@ -95,13 +104,12 @@ function _draw()
 	for k,v in pairs(dealer) do
 	 draw_card(0+k*11,10,v[1],v[2])
 	end
-	if (hidden_card)	draw_card_back(dealerx+11,dealery)
 	-- player counter
 	print(count_score(hand),64,96,7)
 	-- dealer counter
 	print(count_score(dealer),64,10,7)
 	
-	if draw_window then
+	if stage==2 then
 	 -- window background
 	 line(menux,menuy-1,menux+sizex,menuy-1,7)
 	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
@@ -122,6 +130,9 @@ function _draw()
 
 
 -- debug prints
+print(stage,0,0,7)
+print(diff, 0,8,7)
+print(game_result, 0,16,7)
 end
 
 function _update()
@@ -129,28 +140,26 @@ frame_counter+=1
 
 -- player input
 if stage==2 then
- -- exit point: blackjack
- -- if (count_score(hand)==21) stop()
- draw_window=true
+ if (count_score(hand)==21) then
+ 	blackjack=true stage=5
+ end
+ 
  if btnp(3) and item<item_lim then
  	item+=1 end
  if btnp(2) and item>0 then
  	item-=1 end
  if btnp(4) then
   if item == 0 then
-	  hand_code = hit(hand)
- 	 if hand_code==1 then
-	   -- loss condition met
-	  elseif hand_code==2 then
-	   -- win condition met
+	  if hit(hand)==2 then
+	   stage+=1
 	  end
 	 elseif item == 1 then
 	 	stage+=1
 	 elseif item == 2 then
-	  -- double
+	  hit(hand) stage+=1
 	 elseif item == 3 then
-	  -- fold
-	  -- loss condition
+	  fold=true
+	  stage=5
 	 end
  end
 end
@@ -171,8 +180,36 @@ elseif stage==1 then
  elseif hidden_card==false then
  	hidden_card = true 
  else stage+=1 end
-
+-- stage 2: player input
+--  it gets processed earlier
+--  in the code
+-- stage 3: dealer's draw
+elseif stage==3 then
+ if #dealer==1 then
+  hit(dealer)
+  if count_score(dealer)==21 then
+  	-- lose condition
+  end
+ elseif count_score(dealer) < 17 then
+  hit(dealer)
+ else stage+=1 end
+-- stage 4: comparing scores
+--  this stage occurs when 
+--  neither sides overdrawn
+--  nor has drawn blackjack
+elseif stage==4 then
+diff = count_score(hand) -
+       count_score(dealer)
+	if diff>0 then
+		game_result=0
+	elseif diff<0 then
+		game_result=1
+	else 
+		game_result=2
+	end
+stage+=1
 end
+print("ggs",60,60)
 end
 
 __gfx__
