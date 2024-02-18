@@ -7,8 +7,7 @@ __lua__
 -- game logic vars
 hand = {}
 dealer = {}
-player_score=0
-dealer_score=0
+score=0
 
 -- technical vars
 frame_counter = 1
@@ -27,15 +26,23 @@ sizex=40   sizey=40
 cursor_anim_frame = 0
 draw_window = false
 
+function hit(h)
+	add(h,generate_card())
+	a = count_score(h)
+	if a < 21 then return 0
+	elseif a > 21 then return 1
+	else return 2 end
+end
+
 function draw_card(x,y,n,m)
  if m>1 then pal(8,0)
  else pal() end
  n+=1
   -- blank card
  sspr(8,0,11,16,x,y)
-  --value
+  -- value
  sspr(128-n*8,0,6,6,x+2,y+2)
-  --type
+  -- type
  sspr(24+m*8,8,5,5,x+3,y+9)
 end
 
@@ -53,22 +60,22 @@ function add_hard_score(card)
  if (card[1]==0) then 
  elseif card[1]>9 then val=10
  else val=card[1]+1 end
- player_score+=val
+ score+=val
 end
 
 function add_soft_score(card)
  val=0
  if (card[1]!=0) return
- if player_score<11 then val=11
+ if score<11 then val=11
  else val=1 end
- player_score+=val
+ score+=val
 end
 
-function count_score(hand)
- player_score=0
- foreach(hand,add_hard_score)
- foreach(hand,add_soft_score)
- return player_score
+function count_score(h)
+ score=0
+ foreach(h,add_hard_score)
+ foreach(h,add_soft_score)
+ return score
 end
 -- main game functions --
 -------------------------
@@ -113,41 +120,59 @@ function _draw()
 		
 	end
 
+
+-- debug prints
 end
 
 function _update()
- 
- if frame_counter % 20 ==0 then
-  -- stage 1: give player cards
-  if stage==0 then
-   if (#hand<3) then
-    add(hand,generate_card())
-   else stage+=1 end
-  -- stage 2: give dealer card
-  elseif stage==1 then
-   if (#dealer<1) then
-    add(dealer,generate_card())
-   elseif hidden_card==false then
-   	hidden_card = true 
-   else stage+=1 end
-    
-  end
+frame_counter+=1
+
+-- player input
+if stage==2 then
+ -- exit point: blackjack
+ -- if (count_score(hand)==21) stop()
+ draw_window=true
+ if btnp(3) and item<item_lim then
+ 	item+=1 end
+ if btnp(2) and item>0 then
+ 	item-=1 end
+ if btnp(4) then
+  if item == 0 then
+	  hand_code = hit(hand)
+ 	 if hand_code==1 then
+	   -- loss condition met
+	  elseif hand_code==2 then
+	   -- win condition met
+	  end
+	 elseif item == 1 then
+	 	stage+=1
+	 elseif item == 2 then
+	  -- double
+	 elseif item == 3 then
+	  -- fold
+	  -- loss condition
+	 end
  end
- 
- if stage==2 then
-  -- exit point: blackjack
-  -- if (count_score(hand)==21) stop()
-  draw_window=true
-  if btnp(3) and item<item_lim then
-  item+=1 end
-  if btnp(2) and item>0 then
-  item-=1 end
- end
- 
- -- todo:
- -- if confirm pressed
- -- do somethig
- frame_counter+=1
+end
+
+-- from this point on,
+-- program only executes
+-- every 20 frames
+if (frame_counter%20!=0) return
+-- stage 0: give player cards
+if stage==0 then
+ if (#hand<2) then
+  add(hand,generate_card())
+ else stage+=1 end
+-- stage 1: give dealer card
+elseif stage==1 then
+ if (#dealer<1) then
+  add(dealer,generate_card())
+ elseif hidden_card==false then
+ 	hidden_card = true 
+ else stage+=1 end
+
+end
 end
 
 __gfx__
