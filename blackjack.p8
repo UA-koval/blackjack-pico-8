@@ -327,8 +327,15 @@ elseif stage==2 then
 	 elseif item == 1 then -- stand
 	 	stage+=1
 	 elseif item == 2 then -- double
-	  hit(hand)
-	  stage+=1
+	  if bank>=bet then
+		  hit(hand) bet*=2 stage+=1
+		 end
+		 -- todo: what to do if 
+		 --       there is not enough
+		 --       cash?
+		 -- 1: display warning msg
+		 -- 2: grey-out field
+		 -- 3: leave as it is
 	 elseif item == 3 then -- fold
 	  fold=true
 	  stage=5
@@ -380,7 +387,7 @@ elseif stage==3 then
  if #dealer==1 then
   hit(dealer)
   if count_score(dealer)==21 then
-  	-- tldr
+  	-- todo
   	-- lose condition
   end
  elseif count_score(dealer) < 17 then
