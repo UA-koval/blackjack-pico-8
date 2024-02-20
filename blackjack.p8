@@ -5,15 +5,10 @@ __lua__
 -- by koval
 
 -- todo:
--- - game start ui
+-- - game "press start" ui
 -- - fix game logic bugs:
 --  - double non-functioning
---  - blackjack fails after 
---    second game
 -- - implement split feature
--- - what is going on with
---   text after loss?
-
 
 -- game logic vars
 bet = 0
@@ -60,6 +55,7 @@ dealer = {}
 stage=-1
 blackjack=false
 hidden_card=false
+item=0 item_lim=3
 end
 
 function generate_card()
@@ -201,8 +197,10 @@ function draw_game_window()
 	 -- text
 	 print("hit",menux+2,menuy+2,7)
 	 print("stay",menux+2,menuy+10+2,7)
+	 if (#hand>2) pal(7,13)
 	 print("double",menux+2,menuy+20+2,7)
 	 print("fold",menux+2,menuy+30+2,7)
+	 pal()
 	 -- cursor
 		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
 		if (cursor_anim_frame>7) cursor_anim_frame=-1
@@ -283,7 +281,8 @@ function _draw()
  print("bet:"..bet,100,120)
 -- debug prints
 print(stage,0,0,7)
-print(game_result, 0,16,7)
+print(item,0,8,7)
+
 end
 
 -->8
@@ -320,6 +319,8 @@ if stage==-1 then
 if (tempbet>bank) tempbet=bank
 -- stage 2: player's choice
 elseif stage==2 then
+ if (#hand>2) item_lim=1
+ 
  if btnp(3) and item<item_lim then
  	item+=1 end
  if btnp(2) and item>0 then
@@ -332,7 +333,8 @@ elseif stage==2 then
 	 elseif item == 1 then
 	 	stage+=1
 	 elseif item == 2 then
-	  hit(hand) stage+=1
+	  hit(hand)
+	  stage+=1
 	 elseif item == 3 then
 	  fold=true
 	  stage=5
