@@ -15,6 +15,9 @@ __lua__
 --    displays 1px to the right
 --    of card's back
 --  - double and fold are swapped
+-- - implement double protection
+-- - move stages to different tab
+--   and function
 
 -- game logic vars
 bet = 0
@@ -205,8 +208,9 @@ function draw_game_window()
 	 print("hit",menux+2,menuy+2,7)
 	 print("stay",menux+2,menuy+10+2,7)
 	 if (#hand>2) pal(7,13)
-	 print("double",menux+2,menuy+20+2,7)
-	 print("fold",menux+2,menuy+30+2,7)
+	 print("fold",menux+2,menuy+20+2,7)
+	 if (bank<bet) pal(7,13)
+	 print("double",menux+2,menuy+30+2,7)
 	 print("split",menux+2,menuy+40+2,7)
 	 pal()
 	 -- cursor
@@ -376,6 +380,7 @@ elseif stage==1 then
  	 blackjack=true stage=5
   end 
  else stage+=1 end
+ if (bank<bet) item_lim=2
 -- stage 2: player input
 --  it gets processed earlier
 --  in the code
