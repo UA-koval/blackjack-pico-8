@@ -21,6 +21,7 @@ dealer = {}
 score=0
 blackjack, fold = false,false
 game_result=0
+payout
 
 -- technical vars
 frame_counter = 1
@@ -41,8 +42,8 @@ sizex=40   sizey=40
 betmenux=31   betmenuy=32
 betsizex=66   betsizey=40
 -- game result window
-endscreenx=20 endscreeny=32
-endscreensx=40 endscreensy=40
+endscreenx=32 endscreeny=32
+endscreensx=64 endscreensy=32
 
 -- graphics vars
 cursor_anim_frame = 0
@@ -225,20 +226,16 @@ end
 
 function draw_game_result_window()
 	 -- window background
-	 line(menux,menuy-1,menux+sizex,menuy-1,7)
-	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
-	 line(menux-1,menuy,menux-1,menuy+sizey,7)
-	 line(menux+sizex+1,menuy,menux+sizex+1,menuy+sizey,7)
-  rectfill(menux,menuy,menux+sizex,menuy+sizey,1)
+	 line(endscreenx,endscreeny-1,endscreenx+endscreensx,endscreeny-1,7)
+	 line(endscreenx,endscreeny+endscreensy+1,endscreenx+endscreensx,endscreeny+endscreensy+1,7)
+	 line(endscreenx-1,endscreeny,endscreenx-1,endscreeny+endscreensy,7)
+	 line(endscreenx+endscreensx+1,endscreeny,endscreenx+endscreensx+1,endscreeny+endscreensy,7)
+  rectfill(endscreenx,endscreeny,endscreenx+endscreensx,endscreeny+endscreensy,1)
 	 -- text
-	 print("hit",menux+2,menuy+2,7)
-	 print("stay",menux+2,menuy+10+2,7)
-	 print("double",menux+2,menuy+20+2,7)
-	 print("fold",menux+2,menuy+30+2,7)
-	 -- cursor
-		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
-		if (cursor_anim_frame>7) cursor_anim_frame=-1
-		cursor_anim_frame+=1
+	 if game_result==0 then
+	 print("you won ",endscreenx+2,endscreeny+2,7)
+	 print("stay",endscreenx+2,endscreeny+10+2,7)
+
 end
 
 
@@ -269,6 +266,7 @@ function _draw()
 	-- stage 2 ui for input
 	if (stage==2) draw_game_window()
  if (stage==-1) draw_bet_window()
+ if (stage==6) draw_game_result_window()
  print("bank:"..bank,70,112)
  print("bet:"..bet,100,120)
 -- debug prints
@@ -281,6 +279,7 @@ end
 function _update()
 frame_counter+=1
 
+-- stage -1: set bets
 -- ui backend
 --  ui backend for bet window
 if stage==-1 then
@@ -305,10 +304,10 @@ if stage==-1 then
   bank-=bet
   stage+=1
  end
-end
 
--- player game input
-if stage==2 then
+if (tempbet>bank) tempbet=bank
+-- stage 2: player's choice
+elseif stage==2 then
  if (count_score(hand)==21) then
  	blackjack=true stage=5
  end
@@ -389,10 +388,11 @@ stage+=1
 --  1 - loss
 --  2 - draw
 elseif stage==5 then
+payout=bet
  if game_result==0 then
-  if blackjack then bet*=2.5
-  else bet*=2 end
-	 bank+=flr(bet)
+  if blackjack then payout*=2.5
+  else payout*=2 end
+	 bank+=flr(payout)
 	end
 bet=0
 stage+=1
