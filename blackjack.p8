@@ -5,10 +5,13 @@ __lua__
 -- by koval
 
 -- todo:
--- - poker chips for bet ui
 -- - game result ui
 -- - game start ui
--- - restart game
+-- - fix game logic bugs:
+--  - zero bet
+--  - double non-functioning
+-- - implement split feature
+
 
 -- game logic vars
 bet = 0
@@ -29,12 +32,17 @@ item=0 item_lim=3
 dealerx=10 dealery=10
 handx=10   handy=100
 deckx=100  decky=10
+betx=64    bety =100
+bankx=54  banky=120
 -- player choice window
 menux=20   menuy=32
 sizex=40   sizey=40
 -- bet selection window
 betmenux=31   betmenuy=32
 betsizex=66   betsizey=40
+-- game result window
+endscreenx=20 endscreeny=32
+endscreensx=40 endscreensy=40
 
 -- graphics vars
 cursor_anim_frame = 0
@@ -113,7 +121,8 @@ function draw_card(x,y,n,m)
  sspr(128-n*8,0,6,6,x+2,y+2)
   -- type
  sspr(24+m*8,8,5,5,x+3,y+9)
-end
+ pal()
+end --draw_card
 
 function draw_card_back(x,y)
  sspr(8,0,11,16,x,y)
@@ -123,14 +132,14 @@ end
 function draw_chips()
 
 chip_vals={50,25,10,5,1}
-chip_amount={}
-bet = 184 
+chip_amount={} 
 offset=0
+drawbet=max(tempbet,bet)
 
 for v in all(chip_vals) do
-	y = (v * (flr(bet/v)))
-	add(chip_amount,flr(bet/v))
-	bet-=y
+	y = (v * (flr(drawbet/v)))
+	add(chip_amount,flr(drawbet/v))
+	drawbet-=y
 end
 
 for i=1,5 do
@@ -138,15 +147,43 @@ for i=1,5 do
 		offset+=1
 	end
 
-	n=6-i
+	n=56-i
 	
 	for j=1,chip_amount[i] do
-		spr(n,64+(i-offset)*8,64-j*3)
+		spr(n,betx+(i-offset)*8,bety-j*3)
 	end
 
 end
 
+end -- draw_chips()
+
+function draw_bank()
+
+chip_vals={50,25,10,5,1}
+chip_amount={} 
+offset=0
+drawbet=bank
+
+for v in all(chip_vals) do
+	y = (v * (flr(drawbet/v)))
+	add(chip_amount,flr(drawbet/v))
+	drawbet-=y
 end
+
+for i=1,5 do
+	if chip_amount[i]==0 then
+		offset+=1
+	end
+
+	n=56-i
+	
+	for j=1,chip_amount[i] do
+		spr(n,bankx+(i-offset)*8,banky-j*3)
+	end
+
+end
+
+end -- draw_bank()
 
 -- draw ui
 function draw_game_window()
@@ -186,6 +223,24 @@ function draw_bet_window()
 		cursor_anim_frame+=1
 end 
 
+function draw_game_result_window()
+	 -- window background
+	 line(menux,menuy-1,menux+sizex,menuy-1,7)
+	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
+	 line(menux-1,menuy,menux-1,menuy+sizey,7)
+	 line(menux+sizex+1,menuy,menux+sizex+1,menuy+sizey,7)
+  rectfill(menux,menuy,menux+sizex,menuy+sizey,1)
+	 -- text
+	 print("hit",menux+2,menuy+2,7)
+	 print("stay",menux+2,menuy+10+2,7)
+	 print("double",menux+2,menuy+20+2,7)
+	 print("fold",menux+2,menuy+30+2,7)
+	 -- cursor
+		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
+		if (cursor_anim_frame>7) cursor_anim_frame=-1
+		cursor_anim_frame+=1
+end
+
 
 -->8
 -- init
@@ -200,6 +255,8 @@ end
 -- draw
 function _draw()
 	rectfill(0,0,128,128,3)
+	draw_chips()
+	draw_bank()
 	for i=0,2 do
 	 draw_card_back(deckx,decky-i*2)
 	end
@@ -212,12 +269,13 @@ function _draw()
 	-- stage 2 ui for input
 	if (stage==2) draw_game_window()
  if (stage==-1) draw_bet_window()
- print("bank:"..bank,96,112)
+ print("bank:"..bank,70,112)
  print("bet:"..bet,100,120)
 -- debug prints
 print(stage,0,0,7)
 print(game_result, 0,16,7)
 end
+
 -->8
 -- update
 function _update()
@@ -344,6 +402,7 @@ end -- stage selector
 
 end --_update()
 
+
 __gfx__
 00000000001111111000000080080000088000000088800080088000088000000880000088880000088000008888000000880000088000000880000008800000
 00000000017777777100000080880000800800000008000080800800800800008008000080080000800000008000000008080000800800008008000080080000
@@ -369,10 +428,12 @@ __gfx__
 00000000111111100000000077777700777777007777000000000000000000001111000077111100777711007777770000000000000000000000000000000000
 00000000111111100000000077770000770000000000000000000000000000000000000011000000771100007777000000000000000000000000000000000000
 00000000111111100000000077000000000000000000000000000000000000000000000000000000110000007700000000000000000000000000000000000000
-00000000111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000711111700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000001111111000000000007777000088880000bbbb0000cccc00005555000000000000000000000000000000000000000000000000000000000000000000
+0000000011111110000000007777777788888888bbbbbbbbcccccccc555555550000000000000000000000000000000000000000000000000000000000000000
+0000000011111110000000007777777788888888bbbbbbbbcccccccc555555550000000000000000000000000000000000000000000000000000000000000000
+0000000071111170000000007777777788888888bbbbbbbbcccccccc555555550000000000000000000000000000000000000000000000000000000000000000
+000000000000000000000000117777111188881111bbbb1111cccc11115555110000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000111100001111000011110000111100001111000000000000000000000000000000000000000000000000000000000000000000
 __label__
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
