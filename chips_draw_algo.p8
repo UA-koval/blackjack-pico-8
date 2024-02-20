@@ -26,8 +26,7 @@ offset+=1
 end
 
 n=6-i
-print(chip_amount[i],72,i*8)
-print(i,64,i*8)
+
 
 for j=1,chip_amount[i] do
 
