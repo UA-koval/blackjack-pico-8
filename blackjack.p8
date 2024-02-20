@@ -10,6 +10,11 @@ __lua__
 --  - double and fold
 --    non-functioning
 -- - implement split feature
+-- - graphical bug
+--  - dealers's 2nd card
+--    displays 1px to the right
+--    of card's back
+--  - double and fold are swapped
 
 -- game logic vars
 bet = 0
@@ -326,25 +331,17 @@ elseif stage==2 then
 	  end
 	 elseif item == 1 then -- stand
 	 	stage+=1
-	 elseif item == 2 then -- double
-	  if bank>=bet then
-		  hit(hand) bet*=2 stage+=1
-		 end
-		 -- todo: what to do if 
-		 --       there is not enough
-		 --       cash?
-		 -- 1: display warning msg
-		 -- 2: grey-out field
-		 -- 3: leave as it is
-	 elseif item == 3 then -- fold
-	  fold=true
+	 elseif item == 2 then -- fold
+	 	fold=true
 	  stage=5
-	 end
- end
-end
 
+	 elseif item == 3 then -- double
+	  hit(hand) bet*=2 stage+=1
+	 end
+	 
+ end -- menu selector
 -- stage 6: game result screen
-if stage==6 then
+elseif stage==6 then
 	if btnp(4) then 
 		if bank<10 then run() end
 	reset_game()
