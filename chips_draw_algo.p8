@@ -1,36 +1,30 @@
 pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
+function draw_chips()
+
 chip_vals={50,25,10,5,1}
 chip_amount={}
-x = 184 
-sx=64 sy=64 n=0
+bet = 184 
 offset=0
 
-cls()
-
 for v in all(chip_vals) do
---print(v.."*("..x.."//"..v..")), ("..flr(x/v)..")"..", y="..(v * (flr(x/v))))
-y = (v * (flr(x/v)))
-add(chip_amount,flr(x/v))
-x-=y
-end
-
-for k in all(chip_amount) do
---	print(k)
+	y = (v * (flr(bet/v)))
+	add(chip_amount,flr(bet/v))
+	bet-=y
 end
 
 for i=1,5 do
-if chip_amount[i]==0 then
-offset+=1
-end
+	if chip_amount[i]==0 then
+		offset+=1
+	end
 
-n=6-i
+	n=6-i
+	
+	for j=1,chip_amount[i] do
+		spr(n,64+(i-offset)*8,64-j*3)
+	end
 
-
-for j=1,chip_amount[i] do
-
-spr(n,64+(i-offset)*8,64-j*3)
 end
 
 end

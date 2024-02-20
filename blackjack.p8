@@ -29,6 +29,7 @@ item=0 item_lim=3
 dealerx=10 dealery=10
 handx=10   handy=100
 deckx=100  decky=10
+-- player choice window
 menux=20   menuy=32
 sizex=40   sizey=40
 -- bet selection window
@@ -39,6 +40,8 @@ betsizex=66   betsizey=40
 cursor_anim_frame = 0
 tempbet = 0
 
+
+-->8
 -- game logic functions
 function reset_game()
 hand = {}
@@ -89,7 +92,7 @@ function count_score(h)
  foreach(h,add_soft_score)
  return score
 end
-
+-->8
 -- draw functions
 function draw_all_cards()
 	for k,v in pairs(hand) do
@@ -115,6 +118,34 @@ end
 function draw_card_back(x,y)
  sspr(8,0,11,16,x,y)
  sspr(8,16,7,12,x+2,y+2)
+end
+
+function draw_chips()
+
+chip_vals={50,25,10,5,1}
+chip_amount={}
+bet = 184 
+offset=0
+
+for v in all(chip_vals) do
+	y = (v * (flr(bet/v)))
+	add(chip_amount,flr(bet/v))
+	bet-=y
+end
+
+for i=1,5 do
+	if chip_amount[i]==0 then
+		offset+=1
+	end
+
+	n=6-i
+	
+	for j=1,chip_amount[i] do
+		spr(n,64+(i-offset)*8,64-j*3)
+	end
+
+end
+
 end
 
 -- draw ui
@@ -155,12 +186,18 @@ function draw_bet_window()
 		cursor_anim_frame+=1
 end 
 
--- main game functions --
--------------------------
+
+-->8
+-- init
 function _init()
 
 end
 
+
+
+
+-->8
+-- draw
 function _draw()
 	rectfill(0,0,128,128,3)
 	for i=0,2 do
@@ -181,7 +218,8 @@ function _draw()
 print(stage,0,0,7)
 print(game_result, 0,16,7)
 end
-
+-->8
+-- update
 function _update()
 frame_counter+=1
 
