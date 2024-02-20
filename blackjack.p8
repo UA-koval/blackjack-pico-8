@@ -5,11 +5,11 @@ __lua__
 -- by koval
 
 -- todo:
--- - game result ui
 -- - game start ui
 -- - fix game logic bugs:
---  - zero bet
 --  - double non-functioning
+--  - blackjack fails after 
+--    second game
 -- - implement split feature
 -- - what is going on with
 --   text after loss?
@@ -57,7 +57,9 @@ tempbet = 10
 function reset_game()
 hand = {}
 dealer = {}
-stage=-1 
+stage=-1
+blackjack=false
+hidden_card=false
 end
 
 function generate_card()
@@ -382,6 +384,7 @@ elseif stage==3 then
  if #dealer==1 then
   hit(dealer)
   if count_score(dealer)==21 then
+  	-- tldr
   	-- lose condition
   end
  elseif count_score(dealer) < 17 then
