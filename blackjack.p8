@@ -7,15 +7,13 @@ __lua__
 -- todo:
 -- - game "press start" ui
 -- - fix game logic bugs:
---  - double and fold
---    non-functioning
+--  - double and fold are
+--    still broken
 -- - implement split feature
 -- - graphical bug
 --  - dealers's 2nd card
 --    displays 1px to the right
 --    of card's back
---  - double and fold are swapped
--- - implement double protection
 -- - move stages to different tab
 --   and function
 
@@ -62,7 +60,7 @@ function reset_game()
 hand = {}
 dealer = {}
 stage=-1
-blackjack=false
+blackjack=false fold=false
 hidden_card=false
 item=0 item_lim=3
 end
@@ -249,7 +247,9 @@ function draw_game_result_window()
 	 if game_result==0 then
 		 print("you won "..flr(payout),endscreenx+21,endscreeny+2,7)
 	 elseif game_result==1 then
-	 	if bank>=10 then
+	  if fold then
+	  	print("you lost "..abs(ceil(payout/2)),endscreenx+21,endscreeny+2,7)
+	 	elseif bank>=10 then
 		  print("you lost "..abs(flr(payout)),endscreenx+21,endscreeny+2,7)
 	 	else
 	 	 print("you are broke!",endscreenx+16,endscreeny+2,7)
@@ -280,11 +280,12 @@ function _draw()
 	if (stage==2) draw_game_window()
  if (stage==-1) draw_bet_window()
  if (stage==6) draw_game_result_window()
- print("bank:"..bank,70,112)
+ print("bank:"..bank,100,112)
  print("bet:"..bet,100,120)
 -- debug prints
 print(stage,0,0,7)
 print(item,0,8,7)
+print(payout.." "..ceil(payout/2),0,16,0)
 
 end
 
@@ -340,7 +341,8 @@ elseif stage==2 then
 	  stage=5
 
 	 elseif item == 3 then -- double
-	  hit(hand) bet*=2 stage+=1
+	  hit(hand) bank-=bet 
+	  bet*=2 stage+=1
 	 end
 	 
  end -- menu selector
@@ -416,11 +418,17 @@ stage+=1
 --  2 - draw
 elseif stage==5 then
 payout=bet
- if game_result==0 then
-  if blackjack then payout*=2.5
-  else payout*=2 end
-	 bank+=flr(payout)
-	end
+ 
+if fold then
+ game_result=1
+	bank+=flr(payout/2)
+end
+
+if game_result==0 then
+ if blackjack then payout*=2.5
+ else payout*=2 end
+ bank+=flr(payout)
+end
 bet=0
 stage+=1
 -- stage 6: game result screen
