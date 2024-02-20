@@ -49,7 +49,7 @@ endscreensx=82 endscreensy=18
 
 -- graphics vars
 cursor_anim_frame = 0
-tempbet = 0
+tempbet = 10
 
 
 -->8
@@ -237,7 +237,11 @@ function draw_game_result_window()
 	 if game_result==0 then
 		 print("you won "..flr(payout),endscreenx+21,endscreeny+2,7)
 	 elseif game_result==1 then
-	  print("you lost "..abs(flr(payout)),endscreenx+21,endscreeny+2,7)
+	 	if bank>=10 then
+		  print("you lost "..abs(flr(payout)),endscreenx+21,endscreeny+2,7)
+	 	else
+	 	 print("you are broke!",endscreenx+16,endscreeny+2,7)
+	 	end
 	 else
 	  print("draw!",endscreenx+41,endscreeny+2,7)
 	 end
@@ -290,7 +294,7 @@ frame_counter+=1
 --  ui backend for bet window
 if stage==-1 then
  if btnp(0) then
-  if tempbet>0 then
+  if tempbet>10 then
   	tempbet-=1
   end
  elseif btnp(1) then
@@ -298,7 +302,7 @@ if stage==-1 then
   	tempbet+=1
   end
  elseif btnp(3) then
-  if tempbet>9 then
+  if tempbet>19 then
   	tempbet-=10
   end
  elseif btnp(2) then
@@ -334,9 +338,12 @@ elseif stage==2 then
  end
 end
 
-
+-- stage 6: game result screen
 if stage==6 then
-	if (btnp(4)) reset_game()
+	if btnp(4) then 
+		if bank<10 then run() end
+	reset_game()
+ end
 end
 -- result screen backend
 
