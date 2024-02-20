@@ -11,6 +11,8 @@ __lua__
 --  - zero bet
 --  - double non-functioning
 -- - implement split feature
+-- - what is going on with
+--   text after loss?
 
 
 -- game logic vars
@@ -21,7 +23,7 @@ dealer = {}
 score=0
 blackjack, fold = false,false
 game_result=0
-payout
+payout=0
 
 -- technical vars
 frame_counter = 1
@@ -42,8 +44,8 @@ sizex=40   sizey=40
 betmenux=31   betmenuy=32
 betsizex=66   betsizey=40
 -- game result window
-endscreenx=32 endscreeny=32
-endscreensx=64 endscreensy=32
+endscreenx=23 endscreeny=32
+endscreensx=82 endscreensy=18
 
 -- graphics vars
 cursor_anim_frame = 0
@@ -233,9 +235,13 @@ function draw_game_result_window()
   rectfill(endscreenx,endscreeny,endscreenx+endscreensx,endscreeny+endscreensy,1)
 	 -- text
 	 if game_result==0 then
-	 print("you won ",endscreenx+2,endscreeny+2,7)
-	 print("stay",endscreenx+2,endscreeny+10+2,7)
-
+		 print("you won "..flr(payout),endscreenx+21,endscreeny+2,7)
+	 elseif game_result==1 then
+	  print("you lost "..abs(flr(payout)),endscreenx+21,endscreeny+2,7)
+	 else
+	  print("draw!",endscreenx+41,endscreeny+2,7)
+	 end
+	 print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
 end
 
 
@@ -308,10 +314,6 @@ if stage==-1 then
 if (tempbet>bank) tempbet=bank
 -- stage 2: player's choice
 elseif stage==2 then
- if (count_score(hand)==21) then
- 	blackjack=true stage=5
- end
- 
  if btnp(3) and item<item_lim then
  	item+=1 end
  if btnp(2) and item>0 then
@@ -346,14 +348,24 @@ if (frame_counter%20!=0) return
 -- stage 0: give player cards
 if stage==0 then
  if (#hand<2) then
+ if bet==41 then
+ 	add(hand,
+ 	{0,flr(rnd(4))})-- ace
+ 	add(hand,
+ 	{11,flr(rnd(4))})-- queen
+ else
   add(hand,generate_card())
+ end
  else stage+=1 end
 -- stage 1: give dealer card
 elseif stage==1 then
  if (#dealer<1) then
   add(dealer,generate_card())
  elseif hidden_card==false then
- 	hidden_card = true 
+ 	hidden_card = true
+ 	if (count_score(hand)==21) then
+ 	 blackjack=true stage=5
+  end 
  else stage+=1 end
 -- stage 2: player input
 --  it gets processed earlier
