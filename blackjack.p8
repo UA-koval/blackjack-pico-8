@@ -8,14 +8,19 @@ __lua__
 -- - major code rework
 --   in progress!
 --
---  - move dealer's hand to
---    array of hand 0
---
 --  - adapt code for use of
 --    hands array
 --
+-- known bugs:
+-- - split is still
+--   not implemented
 --
--- - game "press start":
+-- - result screen is broken
+--
+-- - game restart is broken
+--
+--
+-- "press start" screen:
 --  - game art screen
 --  - stage update
 --  - draw
@@ -34,7 +39,9 @@ hand = {}
 dealer = {}
 score=0
 blackjack, fold = false,false
+blackjacks={false,false}
 game_result=0
+game_results={0,0}
 payout=0
 
 -- technical vars
@@ -84,16 +91,12 @@ function hit(h)
 	a = count_score(h)
 	if a < 21 then return 0
 	elseif a > 21 then 
-		if h==hand then 
-		 game_result=1 
-		 if #hands!=active_hand then
-			 active_hand+=1
-			else stage=5 end
+		if h!=dealer then 
+		 game_results[active_hand]=1 
+		 next_hand()
 		else
-		 game_result=0
-		 if #hands!=active_hand then
-			 active_hand+=1
-			else stage=5 end
+		 game_results[active_hand]=0
+		 next_hand()
 		end
 	else return 2 end
 end
@@ -230,6 +233,7 @@ end -- draw_bank()
 -- draw ui functions
 function draw_game_window()
 	 -- window background
+	 menuy+=active_hand*16
 	 line(menux,menuy-1,menux+sizex,menuy-1,7)
 	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
 	 line(menux-1,menuy,menux-1,menuy+sizey,7)
@@ -248,6 +252,7 @@ function draw_game_window()
 		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
 		if (cursor_anim_frame>7) cursor_anim_frame=-1
 		cursor_anim_frame+=1
+		menuy-=active_hand*16
 end
 
 function draw_bet_window()
@@ -315,14 +320,21 @@ function _draw()
 	if (stage==2) draw_game_window()
  if (stage==-1) draw_bet_window()
  if (stage==6) draw_game_result_window()
- print("bank:"..bank,100,112)
+ print("bank:"..bank,80,112)
  print("bet:"..bets[1],100,120)
  -- todo: iterate per hand
 -- debug prints
 print(stage,0,0,7)
-print(active_hand,0,8,7)
-for k,v in pairs(bets) do
- print(v,0+k*20,8,7)
+print("active_hand:"..active_hand,0,8,7)
+print("scores:",0,24,7)
+print("gmrslt:",0,32,7)
+print("bjs:",0,40,7)
+print("bets:",0,48,7)
+for n,hand in pairs(hands) do
+ print(count_score(hand),16+n*16,24,7)
+ print(game_results[n],16+n*16,32,7)
+ print(blackjacks[n],16+n*16,40,7)
+ print(bets[n],16+n*16,48,7)
 end
 end
 
@@ -468,10 +480,6 @@ function stage3()
 -- stage 3: dealer's draw
 if #dealer==1 then
  hit(dealer)
- if count_score(dealer)==21 then
- 	-- todo
- 	-- lose condition
- end
 elseif count_score(dealer) < 17 then
  hit(dealer)
 else stage+=1 end
@@ -482,16 +490,21 @@ function stage4()
 --  this stage occurs when 
 --  neither sides overdrawn
 --  nor has drawn blackjack
-diff = count_score(hands[active_hand]) -
-       count_score(dealer)
-if diff>0 then
-	game_result=0
-elseif diff<0 then
-	game_result=1
-else 
-	game_result=2
+for n,hand in pairs(hands) do
+if game_results[n] !=1 and
+count_score(dealer) <= 21 then
+	diff = count_score(hand) -
+	       count_score(dealer)
+	if diff>0 then
+		game_results[n]=0
+	elseif diff<0 then
+		game_results[n]=1
+	else 
+		game_results[n]=2
+	end
 end
 next_hand()
+end
 end -- stage4()
 
 function stage5()
@@ -499,7 +512,8 @@ function stage5()
 --  0 - win
 --  1 - loss
 --  2 - draw
-payout=bets[1]
+for n,hand in pairs(hands) do
+payout=bets[n]
 -- todo: iterate per hand
  
 if fold then
@@ -507,15 +521,20 @@ if fold then
 	bank+=flr(payout/2)
 end
 
-if game_result==0 then
- if blackjack then payout*=2.5
+if game_results[n]==0 then
+ if blackjacks[n] then
+  payout*=2.5
+  payout=flr(payout)
  else payout*=2 end
- bank+=flr(payout)
-end
-bets[1]=0
-stage+=1
+ bank+=payout
+elseif game_results[n]==2 then
+ bank+=payout
+end --selector
 
-end
+end --iterator
+bets[n]=0
+stage+=1
+end -- stage5
 
 function stage6()
 -- stage 6: game result screen
