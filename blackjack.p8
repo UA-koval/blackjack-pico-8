@@ -258,7 +258,7 @@ end
 
 
 -->8
--- draw
+-- _draw
 function _draw()
 	rectfill(0,0,128,128,3)
 	draw_chips()
@@ -285,14 +285,54 @@ print(stage,0,0,7)
 end
 
 -->8
--- update
-function _update()
-frame_counter+=1
+-- update_stage()
+function update_stage()
 
--- stage -1: set bets
--- ui backend
---  ui backend for bet window
 if stage==-1 then
+-- stage -1: set bets
+ stagem1()
+
+elseif stage==2 then
+-- stage 2: player's choice
+ stage2()
+
+elseif stage==6 then
+-- stage 6: game result screen
+ stage6()
+end
+
+-- from this point on, program
+-- only executes every 20 frames
+if (frame_counter%20!=0) return
+
+-- stage 0: give player cards
+	if stage==0 then
+		stage0()
+
+	elseif stage==1 then
+	-- stage 1: give dealer card
+		stage1()
+
+elseif stage==3 then
+-- stage 3: dealer's draw
+stage3()
+
+elseif stage==4 then
+-- stage 4: comparing scores
+--  this stage occurs when 
+--  neither sides overdrawn
+--  nor has drawn blackjack
+stage4()
+
+elseif stage==5 then
+-- stage 5: payout
+stage5()
+end -- stage selector
+
+end -- update_stage()
+
+function stagem1()
+-- stage -1: set bets
  if btnp(0) then
   if tempbet>10 then
   	tempbet-=1
@@ -316,102 +356,96 @@ if stage==-1 then
  end
 
 if (tempbet>bank) tempbet=bank
--- stage 2: player's choice
-elseif stage==2 then
- if (#hand>2) item_lim=1
- 
- if btnp(3) and item<item_lim then
- 	item+=1 end
- if btnp(2) and item>0 then
- 	item-=1 end
- if btnp(4) then
-  if item == 0 then -- hit
-	  if hit(hand)==2 then
-	   stage+=1
-	  end
-	 elseif item == 1 then -- stand
-	 	stage+=1
-	 elseif item == 2 then -- fold
-	 	fold=true
-	  stage=5
+end -- stagem1()
 
-	 elseif item == 3 then -- double
-	  hit(hand) bank-=bet 
-	  bet*=2 stage+=1
-	 end
-	 
- end -- menu selector
--- stage 6: game result screen
-elseif stage==6 then
-	if btnp(4) then 
-		if bank<10 then run() end
-	reset_game()
- end
+function stage0()
+if (#hand<2) then
+if bet==41 then
+	add(hand,
+	{0,flr(rnd(4))})-- ace
+	add(hand,
+	{11,flr(rnd(4))})-- queen
+else
+ add(hand,generate_card())
 end
--- result screen backend
+else stage+=1 end
+end stage0()
 
-
--- from this point on,
--- program only executes
--- every 20 frames
-if (frame_counter%20!=0) return
--- stage 0: give player cards
-if stage==0 then
- if (#hand<2) then
- if bet==41 then
- 	add(hand,
- 	{0,flr(rnd(4))})-- ace
- 	add(hand,
- 	{11,flr(rnd(4))})-- queen
- else
-  add(hand,generate_card())
- end
- else stage+=1 end
+function stage1()
 -- stage 1: give dealer card
-elseif stage==1 then
- if (#dealer<1) then
-  add(dealer,generate_card())
- elseif hidden_card==false then
- 	hidden_card = true
- 	if (count_score(hand)==21) then
- 	 blackjack=true stage=5
-  end 
- else stage+=1 end
- if (bank<bet) item_lim=2
--- stage 2: player input
---  it gets processed earlier
---  in the code
--- stage 3: dealer's draw
-elseif stage==3 then
- if #dealer==1 then
-  hit(dealer)
-  if count_score(dealer)==21 then
-  	-- todo
-  	-- lose condition
+if (#dealer<1) then
+ add(dealer,generate_card())
+elseif hidden_card==false then
+	hidden_card = true
+	if (count_score(hand)==21) then
+	 blackjack=true stage=5
+ end 
+else stage+=1 end
+if (bank<bet) item_lim=2
+end -- stage1()
+
+function stage2()
+-- stage 2: player's choice
+if (#hand>2) item_lim=1
+
+if btnp(3) and item<item_lim then
+	item+=1 end
+if btnp(2) and item>0 then
+	item-=1 end
+if btnp(4) then
+ if item == 0 then -- hit
+  if hit(hand)==2 then
+   stage+=1
   end
- elseif count_score(dealer) < 17 then
-  hit(dealer)
- else stage+=1 end
+ elseif item == 1 then -- stand
+ 	stage+=1
+ elseif item == 2 then -- fold
+ 	fold=true
+  stage=5
+
+ elseif item == 3 then -- double
+  hit(hand) bank-=bet 
+  bet*=2 stage+=1
+ end
+ 
+end -- menu selector
+end -- stage2()
+
+function stage3()
+-- stage 3: dealer's draw
+if #dealer==1 then
+ hit(dealer)
+ if count_score(dealer)==21 then
+ 	-- todo
+ 	-- lose condition
+ end
+elseif count_score(dealer) < 17 then
+ hit(dealer)
+else stage+=1 end
+end --stage3()
+
+function stage4()
 -- stage 4: comparing scores
 --  this stage occurs when 
 --  neither sides overdrawn
 --  nor has drawn blackjack
-elseif stage==4 then
 diff = count_score(hand) -
        count_score(dealer)
-	if diff>0 then
-		game_result=0
-	elseif diff<0 then
-		game_result=1
-	else 
-		game_result=2
-	end
+if diff>0 then
+	game_result=0
+elseif diff<0 then
+	game_result=1
+else 
+	game_result=2
+end
 stage+=1
+end -- stage4()
+
+function stage5()
 -- stage 5: payout
 --  0 - win
 --  1 - loss
 --  2 - draw
-elseif stage==5 then
 payout=bet
  
 if fold then
@@ -426,10 +460,21 @@ if game_result==0 then
 end
 bet=0
 stage+=1
+
+end
+
+function stage6()
 -- stage 6: game result screen
-end -- stage selector
-
-
+if btnp(4) then 
+	if bank<10 then run() end
+reset_game()
+end
+end --stage6()
+-->8
+-- _update()
+function _update()
+frame_counter+=1
+update_stage()
 end --_update()
 
 
