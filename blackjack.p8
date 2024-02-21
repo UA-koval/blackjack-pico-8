@@ -5,17 +5,31 @@ __lua__
 -- by koval
 
 -- todo:
--- - game "press start" ui
--- - move stages to different tab
---   and function
--- - fix game logic bugs:
---   *no bugs currently*
+-- - major code rework
+--   in progress!
 --
+--  - move dealer's hand to
+--    array of hand 0
+--
+--  - adapt code for use of
+--    hands array
+--
+--
+-- - game "press start":
+--  - game art screen
+--  - stage update
+--  - draw
+-- 
 -- - implement split feature
-
+-- - research common blackjack
+--   rules, like "player's 
+--   blackjack against dealer's"
+--   
 -- game logic vars
-bet = 0
+bets = {10,10}
 bank = 100
+hands= {{},{}}
+active_hand=1
 hand = {}
 dealer = {}
 score=0
@@ -27,7 +41,7 @@ payout=0
 frame_counter = 1
 stage = -1
 hidden_card = false
-item=0 item_lim=3
+item=0 item_lim=4
 
 -- objects coords
 dealerx=10 dealery=10
@@ -36,7 +50,7 @@ deckx=100  decky=10
 betx=64    bety =100
 bankx=54  banky=120
 -- player choice window
-menux=20   menuy=32
+menux=60   menuy=32
 sizex=40   sizey=48
 -- bet selection window
 betmenux=31   betmenuy=32
@@ -71,9 +85,15 @@ function hit(h)
 	if a < 21 then return 0
 	elseif a > 21 then 
 		if h==hand then 
-		 game_result=1 stage=5
+		 game_result=1 
+		 if #hands!=active_hand then
+			 active_hand+=1
+			else stage=5 end
 		else
-		 game_result=0 stage=5
+		 game_result=0
+		 if #hands!=active_hand then
+			 active_hand+=1
+			else stage=5 end
 		end
 	else return 2 end
 end
@@ -104,9 +124,25 @@ function count_score(h)
  foreach(h,add_soft_score)
  return score
 end
+
+function next_hand(stage5)
+	if #hands!=active_hand then
+		active_hand+=1
+	else 
+	 if stage5 then	stage=5
+	 else stage+=1end
+	 active_hand=0
+	end
+end
 -->8
 -- draw functions
 function draw_all_cards()
+ for n,chand in pairs(hands) do
+ 	for k,v in pairs(chand) do
+	 	draw_card(0+k*11,50+n*16,v[1],v[2])
+		end
+ end
+ 
 	for k,v in pairs(hand) do
 	 draw_card(0+k*11,100,v[1],v[2])
 	end
@@ -138,7 +174,8 @@ function draw_chips()
 chip_vals={50,25,10,5,1}
 chip_amount={} 
 offset=0
-drawbet=max(tempbet,bet)
+drawbet=tempbet
+-- todo: adapt per hand
 
 for v in all(chip_vals) do
 	y = (v * (flr(drawbet/v)))
@@ -203,7 +240,7 @@ function draw_game_window()
 	 print("stay",menux+2,menuy+10+2,7)
 	 if (#hand>2) pal(7,13)
 	 print("fold",menux+2,menuy+20+2,7)
-	 if (bank<bet) pal(7,13)
+	 if (bank<bets[active_hand]) pal(7,13)
 	 print("double",menux+2,menuy+30+2,7)
 	 print("split",menux+2,menuy+40+2,7)
 	 pal()
@@ -251,7 +288,7 @@ function draw_game_result_window()
 	 	 print("you are broke!",endscreenx+16,endscreeny+2,7)
 	 	end
 	 else
-	  print("draw!",endscreenx+41,endscreeny+2,7)
+	  print("draw!",endscreenx+32,endscreeny+2,7)
 	 end
 	 print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
 end
@@ -279,13 +316,18 @@ function _draw()
  if (stage==-1) draw_bet_window()
  if (stage==6) draw_game_result_window()
  print("bank:"..bank,100,112)
- print("bet:"..bet,100,120)
+ print("bet:"..bets[1],100,120)
+ -- todo: iterate per hand
 -- debug prints
 print(stage,0,0,7)
+print(active_hand,0,8,7)
+for k,v in pairs(bets) do
+ print(v,0+k*20,8,7)
+end
 end
 
 -->8
--- update_stage()
+-- stage functions
 function update_stage()
 
 if stage==-1 then
@@ -350,8 +392,8 @@ function stagem1()
   	tempbet+=10
   end
  elseif btnp(4) then
-  bet=tempbet
-  bank-=bet
+  bets[1]=tempbet
+  bank-=tempbet
   stage+=1
  end
 
@@ -359,17 +401,23 @@ if (tempbet>bank) tempbet=bank
 end -- stagem1()
 
 function stage0()
-if (#hand<2) then
-if bet==41 then
-	add(hand,
-	{0,flr(rnd(4))})-- ace
-	add(hand,
-	{11,flr(rnd(4))})-- queen
-else
- add(hand,generate_card())
-end
-else stage+=1 end
-end stage0()
+-- stage 0: give player cards
+for n,chand in pairs(hands) do
+
+if (#chand<2) then
+	if bets[1]==41 then
+		add(chand,
+		{0,flr(rnd(4))})-- ace
+		add(chand,
+		{11,flr(rnd(4))})-- queen
+	else
+	 add(chand,generate_card())
+	end
+	return
+end 
+end --foreach hand 
+stage+=1
+end --stage0()
 
 function stage1()
 -- stage 1: give dealer card
@@ -377,16 +425,17 @@ if (#dealer<1) then
  add(dealer,generate_card())
 elseif hidden_card==false then
 	hidden_card = true
-	if (count_score(hand)==21) then
+	if (count_score(hands[active_hand])==21) then
 	 blackjack=true stage=5
  end 
 else stage+=1 end
-if (bank<bet) item_lim=2
 end -- stage1()
 
 function stage2()
 -- stage 2: player's choice
-if (#hand>2) item_lim=1
+if (bank<bets[active_hand]) item_lim=2
+if #hands[active_hand]>2 then
+ item_lim=1 end
 
 if btnp(3) and item<item_lim then
 	item+=1 end
@@ -394,18 +443,22 @@ if btnp(2) and item>0 then
 	item-=1 end
 if btnp(4) then
  if item == 0 then -- hit
-  if hit(hand)==2 then
-   stage+=1
+  if hit(hands[active_hand])==2 then -- 21 score
+			next_hand()
   end
  elseif item == 1 then -- stand
- 	stage+=1
+ 	next_hand()
  elseif item == 2 then -- fold
- 	fold=true
-  stage=5
+  if #hands==1 then
+	 	fold=true
+	  stage=5
+	 end
 
  elseif item == 3 then -- double
-  hit(hand) bank-=bet 
-  bet*=2 stage+=1
+  hit(hands[active_hand]) 
+  bank-=bets[active_hand] 
+  bets[active_hand]*=2
+  next_hand()
  end
  
 end -- menu selector
@@ -429,7 +482,7 @@ function stage4()
 --  this stage occurs when 
 --  neither sides overdrawn
 --  nor has drawn blackjack
-diff = count_score(hand) -
+diff = count_score(hands[active_hand]) -
        count_score(dealer)
 if diff>0 then
 	game_result=0
@@ -438,7 +491,7 @@ elseif diff<0 then
 else 
 	game_result=2
 end
-stage+=1
+next_hand()
 end -- stage4()
 
 function stage5()
@@ -446,7 +499,8 @@ function stage5()
 --  0 - win
 --  1 - loss
 --  2 - draw
-payout=bet
+payout=bets[1]
+-- todo: iterate per hand
  
 if fold then
  game_result=1
@@ -458,7 +512,7 @@ if game_result==0 then
  else payout*=2 end
  bank+=flr(payout)
 end
-bet=0
+bets[1]=0
 stage+=1
 
 end
