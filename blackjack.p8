@@ -6,16 +6,12 @@ __lua__
 
 -- todo:
 -- - game "press start" ui
--- - fix game logic bugs:
---  - double and fold are
---    still broken
--- - implement split feature
--- - graphical bug
---  - dealers's 2nd card
---    displays 1px to the right
---    of card's back
 -- - move stages to different tab
 --   and function
+-- - fix game logic bugs:
+--   *no bugs currently*
+--
+-- - implement split feature
 
 -- game logic vars
 bet = 0
@@ -270,7 +266,9 @@ function _draw()
 	for i=0,2 do
 	 draw_card_back(deckx,decky-i*2)
 	end
-	if (hidden_card)	draw_card_back(dealerx+11,dealery)
+	if hidden_card then
+	 draw_card_back(dealerx+12,dealery)
+	end
  draw_all_cards()
 	-- player counter
 	print(count_score(hand),64,96,7)
@@ -284,9 +282,6 @@ function _draw()
  print("bet:"..bet,100,120)
 -- debug prints
 print(stage,0,0,7)
-print(item,0,8,7)
-print(payout.." "..ceil(payout/2),0,16,0)
-
 end
 
 -->8
