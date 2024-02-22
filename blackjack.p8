@@ -10,18 +10,12 @@ __lua__
 --
 --
 -- known bugs:
+-- -double doubles bet
+--  for second hand, if present
+
 -- 
 -- - split is still
 --   not implemented
---
--- 
--- # bjs are broken
--- 
--- - bj on first hands still
---   gives player actions menu
---
--- - write "blackjack!" on
---   result screen
 --
 --
 -- refactor stages to table
@@ -36,6 +30,7 @@ __lua__
 --   rules, like "player's 
 --   blackjack against dealer's"
 --   
+
 -- game logic vars
 bets = {10,10}
 bank = 100
@@ -97,16 +92,10 @@ end
 
 function hit(h)
 	add(h,generate_card())
-	a = count_score(h)
-	if a < 21 then return 0
-	elseif a > 21 then 
-		if h!=dealer then 
-		 game_results[active_hand]=1 
-		 next_hand()
-		else
-		 next_hand()
-		end
-	else return 2 end
+	if count_score(hands[active_hand]) >21 then
+  game_results[active_hand]=1
+	elseif count_score(hands[active_hand]) == 21 then
+ end
 end
 
 -- score counting functions
@@ -464,8 +453,8 @@ if (count_score(hands[active_hand])==21) then
 end 
 
 if (bank<bets[1]) item_lim=2
-if #hands[active_hand]>2 then
- item_lim=1 end
+--if #hands[active_hand]>2 then
+-- item_lim=1 end
 
 if btnp(3) and item<item_lim then
 	item+=1 end
@@ -473,9 +462,8 @@ if btnp(2) and item>0 then
 	item-=1 end
 if btnp(4) then
  if item == 0 then -- hit
-  if hit(hands[active_hand])==2 then -- 21 score
-			next_hand()
-  end
+  hit(hands[active_hand])
+ 	next_hand()
  elseif item == 1 then -- stand
  	next_hand()
  elseif item == 2 then -- fold
@@ -487,7 +475,7 @@ if btnp(4) then
   hit(hands[active_hand]) 
   bank-=bets[active_hand] 
   bets[active_hand]*=2
-  next_hand()
+ 	next_hand()
  end
  
 end -- menu selector
