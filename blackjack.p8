@@ -8,18 +8,24 @@ __lua__
 -- - major code rework
 --   in progress!
 --
---  - adapt code for use of
---    hands array
 --
 -- known bugs:
+-- 
 -- - split is still
 --   not implemented
 --
--- - result screen is broken
+-- 
+-- # bjs are broken
+-- 
+-- - bj on first hands still
+--   gives player actions menu
 --
--- - game restart is broken
+-- - write "blackjack!" on
+--   result screen
 --
 --
+-- refactor stages to table
+-- 
 -- "press start" screen:
 --  - game art screen
 --  - stage update
@@ -33,7 +39,7 @@ __lua__
 -- game logic vars
 bets = {10,10}
 bank = 100
-hands= {{},{}}
+hands= {{{10,0},{10,0},{10,0}},{{0,0},{10,0}}}
 active_hand=1
 hand = {}
 dealer = {}
@@ -74,12 +80,15 @@ tempbet = 10
 -->8
 -- game logic functions
 function reset_game()
-hand = {}
+hands = {{}}
+game_results = {0}
 dealer = {}
 stage=-1
 blackjack=false fold=false
+blackjacks={false}
 hidden_card=false
 item=0 item_lim=3
+active_hand=1
 end
 
 function generate_card()
@@ -95,7 +104,6 @@ function hit(h)
 		 game_results[active_hand]=1 
 		 next_hand()
 		else
-		 game_results[active_hand]=0
 		 next_hand()
 		end
 	else return 2 end
@@ -128,13 +136,13 @@ function count_score(h)
  return score
 end
 
-function next_hand(stage5)
+function next_hand()
 	if #hands!=active_hand then
 		active_hand+=1
 	else 
-	 if stage5 then	stage=5
-	 else stage+=1end
-	 active_hand=0
+	if (stage==6) reset_game() stage=-1 return
+  stage+=1
+	 active_hand=1
 	end
 end
 -->8
@@ -244,7 +252,7 @@ function draw_game_window()
 	 print("stay",menux+2,menuy+10+2,7)
 	 if (#hand>2) pal(7,13)
 	 print("fold",menux+2,menuy+20+2,7)
-	 if (bank<bets[active_hand]) pal(7,13)
+	 if (bank<bets[1]) pal(7,13)
 	 print("double",menux+2,menuy+30+2,7)
 	 print("split",menux+2,menuy+40+2,7)
 	 pal()
@@ -275,6 +283,7 @@ function draw_bet_window()
 end 
 
 function draw_game_result_window()
+  endscreeny+=active_hand*10
 	 -- window background
 	 line(endscreenx,endscreeny-1,endscreenx+endscreensx,endscreeny-1,7)
 	 line(endscreenx,endscreeny+endscreensy+1,endscreenx+endscreensx,endscreeny+endscreensy+1,7)
@@ -282,13 +291,17 @@ function draw_game_result_window()
 	 line(endscreenx+endscreensx+1,endscreeny,endscreenx+endscreensx+1,endscreeny+endscreensy,7)
   rectfill(endscreenx,endscreeny,endscreenx+endscreensx,endscreeny+endscreensy,1)
 	 -- text
-	 if game_result==0 then
-		 print("you won "..flr(payout),endscreenx+21,endscreeny+2,7)
-	 elseif game_result==1 then
+	 if game_results[active_hand]==0 then
+	  if blackjacks[active_hand] then
+	  print("blackjack! "..flr(bets[active_hand]*2.5),endscreenx+15,endscreeny+2,7)
+	  else
+		 print("you won "..bets[active_hand]*2,endscreenx+21,endscreeny+2,7)
+		 end
+	 elseif game_results[active_hand]==1 then
 	  if fold then
-	  	print("you lost "..abs(ceil(payout/2)),endscreenx+21,endscreeny+2,7)
+	  	print("you lost "..abs(ceil(bets[active_hand]/2)),endscreenx+21,endscreeny+2,7)
 	 	elseif bank>=10 then
-		  print("you lost "..abs(flr(payout)),endscreenx+21,endscreeny+2,7)
+		  print("you lost "..bets[active_hand],endscreenx+21,endscreeny+2,7)
 	 	else
 	 	 print("you are broke!",endscreenx+16,endscreeny+2,7)
 	 	end
@@ -296,6 +309,7 @@ function draw_game_result_window()
 	  print("draw!",endscreenx+32,endscreeny+2,7)
 	 end
 	 print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
+	 endscreeny-=active_hand*10
 end
 
 
@@ -437,15 +451,19 @@ if (#dealer<1) then
  add(dealer,generate_card())
 elseif hidden_card==false then
 	hidden_card = true
-	if (count_score(hands[active_hand])==21) then
-	 blackjack=true stage=5
- end 
 else stage+=1 end
 end -- stage1()
 
 function stage2()
 -- stage 2: player's choice
-if (bank<bets[active_hand]) item_lim=2
+
+-- bj test
+if (count_score(hands[active_hand])==21) then
+ blackjacks[active_hand]=true
+ next_hand()
+end 
+
+if (bank<bets[1]) item_lim=2
 if #hands[active_hand]>2 then
  item_lim=1 end
 
@@ -463,7 +481,6 @@ if btnp(4) then
  elseif item == 2 then -- fold
   if #hands==1 then
 	 	fold=true
-	  stage=5
 	 end
 
  elseif item == 3 then -- double
@@ -533,6 +550,7 @@ end --selector
 
 end --iterator
 bets[n]=0
+active_hand=1
 stage+=1
 end -- stage5
 
@@ -540,7 +558,7 @@ function stage6()
 -- stage 6: game result screen
 if btnp(4) then 
 	if bank<10 then run() end
-reset_game()
+next_hand()
 end
 end --stage6()
 -->8
