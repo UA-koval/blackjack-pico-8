@@ -27,7 +27,7 @@ __lua__
 
 -- game logic vars
 bets = {0}
-bank = 100
+bank = 1000
 hands= {{}}
 active_hand=1
 dealer = {}
@@ -62,7 +62,7 @@ endscreensx=82 endscreensy=18
 cursor_anim_frame = 0
 tempbet = 10
 
-debug=true
+debug=false
 -->8
 -- game logic functions
 function reset_game()
@@ -163,7 +163,7 @@ function draw_chips(px,py,v,r)
 chip_vals={50,25,10,5,1}
 chip_amount={} 
 offset=0
-drawbet=v
+drawbet=min(300,v)
 
 for v in all(chip_vals) do
 	y = (v * (flr(drawbet/v)))
@@ -285,10 +285,11 @@ function _draw()
 	draw_chips(bankx,banky,bank)
 
 	for n,hand in pairs(hands) do
-	 -- counters
-		print(count_score(hand),handx-10,(handy+0)+n*16,7)
 		-- bets
-		draw_chips(handx+10,(handy+8)+n*16,bets[active_hand],true)
+		draw_chips(handx+10,(handy+12)+n*16,bets[active_hand],true)
+	 -- counters
+	 rectfill(handx+1,(handy+0)+n*16,handx+9,(handy+6)+n*16,1)
+		print(count_score(hand),handx+2,(handy+1)+n*16,7)
 	end
 	
 	-- dealer counter
@@ -435,7 +436,8 @@ end
 
 if (bank<bets[1]) item_lim=2
 if #hands[active_hand]>2 then
- item_lim=1 end
+ item_lim=1
+ else item_lim=4 end
 
 if btnp(3) and item<item_lim then
 	item+=1 end
