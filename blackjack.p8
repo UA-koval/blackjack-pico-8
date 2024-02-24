@@ -158,7 +158,7 @@ function draw_card_back(x,y)
  sspr(8,16,7,12,x+2,y+2)
 end
 
-function draw_chips(px,py,v)
+function draw_chips(px,py,v,r)
 
 chip_vals={50,25,10,5,1}
 chip_amount={} 
@@ -178,10 +178,11 @@ for i=1,5 do
 	end
 
 	n=56-i
-	
-	for j=1,chip_amount[i] do
-		spr(n,px+(i-offset)*8,py-j*2)
-	end
+
+
+for j=1,chip_amount[i] do
+	spr(n,px+(i-offset)*8,py-j*2)
+end
 
 end
 
