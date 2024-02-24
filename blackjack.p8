@@ -44,10 +44,10 @@ item=0 item_lim=4
 
 -- objects coords
 dealerx=10 dealery=10
-handx=10   handy=100
+handx=30   handy=50
 deckx=100  decky=10
 betx=64    bety =100
-bankx=54  banky=120
+bankx=40  banky=120
 -- player choice window
 menux=60   menuy=32
 sizex=40   sizey=48
@@ -75,6 +75,7 @@ blackjacks={false}
 hidden_card=false
 item=0 item_lim=3
 active_hand=1
+bets={0}
 end
 
 function generate_card()
@@ -130,13 +131,10 @@ end
 function draw_all_cards()
  for n,chand in pairs(hands) do
  	for k,v in pairs(chand) do
-	 	draw_card(0+k*11,50+n*16,v[1],v[2])
+	 	draw_card(handx+k*11,handy+n*16,v[1],v[2])
 		end
  end
  
-	for k,v in pairs(hand) do
-	 draw_card(0+k*11,100,v[1],v[2])
-	end
 	for k,v in pairs(dealer) do
 	 draw_card(0+k*11,10,v[1],v[2])
 	end
@@ -160,12 +158,12 @@ function draw_card_back(x,y)
  sspr(8,16,7,12,x+2,y+2)
 end
 
-function draw_chips()
+function draw_chips(px,py,v)
 
 chip_vals={50,25,10,5,1}
 chip_amount={} 
 offset=0
-drawbet=tempbet
+drawbet=v
 -- todo: adapt per hand
 
 for v in all(chip_vals) do
@@ -182,41 +180,12 @@ for i=1,5 do
 	n=56-i
 	
 	for j=1,chip_amount[i] do
-		spr(n,betx+(i-offset)*8,bety-j*2)
+		spr(n,px+(i-offset)*8,py-j*2)
 	end
 
 end
 
 end -- draw_chips()
-
-function draw_bank()
-
-chip_vals={50,25,10,5,1}
-chip_amount={} 
-offset=0
-drawbet=bank
-
-for v in all(chip_vals) do
-	y = (v * (flr(drawbet/v)))
-	add(chip_amount,flr(drawbet/v))
-	drawbet-=y
-end
-
-for i=1,5 do
-	if chip_amount[i]==0 then
-		offset+=1
-	end
-
-	n=56-i
-	
-	for j=1,chip_amount[i] do
-		spr(n,bankx+(i-offset)*8,banky-j*2)
-	end
-
-end
-
-end -- draw_bank()
-
 -->8
 -- draw ui functions
 function draw_game_window()
@@ -298,25 +267,34 @@ end
 -- _draw
 function _draw()
 	rectfill(0,0,128,128,3)
-	draw_chips()
-	draw_bank()
+
 	for i=0,2 do
 	 draw_card_back(deckx,decky-i*2)
 	end
+	
 	if hidden_card then
 	 draw_card_back(dealerx+12,dealery)
 	end
+	
  draw_all_cards()
-	-- player counter
+
+	draw_chips(bankx,banky,bank)
+
 	for n,hand in pairs(hands) do
-		print(count_score(hand),2,58+n*16,7)
+	 -- counters
+		print(count_score(hand),handx-10,(handy+0)+n*16,7)
+		-- bets
+		draw_chips(handx-38,(handy+8)+n*16,bets[active_hand])
 	end
+	
 	-- dealer counter
 	print(count_score(dealer),64,10,7)
-	-- stage 2 ui for input
-	if (stage==2) draw_game_window()
- if (stage==-1) draw_bet_window()
- if (stage==6) draw_game_result_window()
+	
+ if stage==-1 then draw_bet_window()
+ draw_chips(40,84,tempbet)
+	elseif stage==2 then draw_game_window()
+ elseif stage==6 then draw_game_result_window()
+ end
  print("bank:"..bank,80,112)
  print("bet:"..bets[1],100,120)
  -- todo: iterate per hand
