@@ -193,6 +193,8 @@ end -- draw_chips()
 -->8
 -- draw ui functions
 function draw_game_window()
+  menux=handx
+  menuy=handy-sizey-2
 	 -- window background
 	 if (blackjacks[active_hand]) return
 	 menuy+=active_hand*16
