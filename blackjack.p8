@@ -164,7 +164,6 @@ chip_vals={50,25,10,5,1}
 chip_amount={} 
 offset=0
 drawbet=v
--- todo: adapt per hand
 
 for v in all(chip_vals) do
 	y = (v * (flr(drawbet/v)))
