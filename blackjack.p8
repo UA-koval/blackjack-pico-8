@@ -5,25 +5,13 @@ __lua__
 -- by koval
 
 -- todo:
--- - major code rework
---   in progress!
 --
---
--- known bugs:
--- - score is wrong
---
--- refactor stages to table
 -- 
 -- "press start" screen:
 --  - game art screen
 --  - stage update
 --  - draw
 -- 
--- - implement split feature
--- - research common blackjack
---   rules, like "player's 
---   blackjack against dealer's"
---   
 
 -- game logic vars
 bets = {0}
@@ -50,7 +38,7 @@ betx=64    bety =100
 bankx=40  banky=120
 -- player choice window
 menux=60   menuy=32
-sizex=40   sizey=48
+sizex=30   sizey=48
 -- bet selection window
 betmenux=31   betmenuy=32
 betsizex=66   betsizey=40
@@ -193,8 +181,8 @@ end -- draw_chips()
 -->8
 -- draw ui functions
 function draw_game_window()
-  menux=handx
-  menuy=handy-sizey-2
+  menux=handx+12
+  menuy=handy-sizey-3
 	 -- window background
 	 if (blackjacks[active_hand]) return
 	 menuy+=active_hand*16
@@ -214,8 +202,9 @@ function draw_game_window()
 	 pal()
 	 -- cursor
 		spr(35+cursor_anim_frame,menux-10,menuy+item*10)
-		if (cursor_anim_frame>7) cursor_anim_frame=-1
-		cursor_anim_frame+=1
+
+
+	
 		menuy-=active_hand*16
 end
 
@@ -234,8 +223,6 @@ function draw_bet_window()
 	 print(tempbet,betmenux+32,betmenuy+30+2,7)
 	 -- cursor
 		spr(35+cursor_anim_frame,betmenux-10,betmenuy+30)
-		if (cursor_anim_frame>7) cursor_anim_frame=-1
-		cursor_anim_frame+=1
 end 
 
 function draw_game_result_window()
@@ -290,12 +277,13 @@ function _draw()
 		-- bets
 		draw_chips(handx+10,(handy+12)+n*16,bets[active_hand],true)
 	 -- counters
-	 rectfill(handx+1,(handy+0)+n*16,handx+9,(handy+6)+n*16,1)
-		print(count_score(hand),handx+2,(handy+1)+n*16,7)
+	 rectfill(handx+1,(handy+1)+n*16,handx+9,(handy+7)+n*16,1)
+		print(count_score(hand),handx+2,(handy+2)+n*16,7)
 	end
 	
 	-- dealer counter
-	print(count_score(dealer),64,10,7)
+	rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
+	print(count_score(dealer),dealerx-8,dealery+2,7)
 	
  if stage==-1 then draw_bet_window()
  draw_chips(40,84,tempbet)
@@ -550,6 +538,12 @@ end --stage6()
 function _update()
 frame_counter+=1
 update_stage()
+
+if frame_counter%2==0 then
+	if (cursor_anim_frame>7) cursor_anim_frame=-1
+cursor_anim_frame+=1
+end
+
 end --_update()
 
 
