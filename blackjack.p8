@@ -452,7 +452,9 @@ if btnp(4) then
   bets[active_hand]*=2
  	next_hand()
  elseif item == 4 then -- split
-  if #hands[active_hand] <2 then return end
+  if #hands[active_hand] <2 
+	  or bank<bets[1] 
+ 	 then return end
   add(hands,{})
   add(hands[#hands],
   hands[active_hand][2])
