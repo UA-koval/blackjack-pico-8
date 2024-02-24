@@ -73,7 +73,7 @@ stage=-1
 blackjack=false fold=false
 blackjacks={false}
 hidden_card=false
-item=0 item_lim=3
+item=0 item_lim=4
 active_hand=1
 bets={0}
 end
@@ -178,11 +178,15 @@ for i=1,5 do
 
 	n=56-i
 
-
+if r then
 for j=1,chip_amount[i] do
+	spr(n,px-(i-offset)*8,py-j*2)
+end
+else
+	for j=1,chip_amount[i] do
 	spr(n,px+(i-offset)*8,py-j*2)
 end
-
+end
 end
 
 end -- draw_chips()
@@ -284,7 +288,7 @@ function _draw()
 	 -- counters
 		print(count_score(hand),handx-10,(handy+0)+n*16,7)
 		-- bets
-		draw_chips(handx-38,(handy+8)+n*16,bets[active_hand])
+		draw_chips(handx+10,(handy+8)+n*16,bets[active_hand],true)
 	end
 	
 	-- dealer counter
