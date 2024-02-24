@@ -10,13 +10,7 @@ __lua__
 --
 --
 -- known bugs:
--- -double doubles bet
---  for second hand, if present
-
--- 
--- - split is still
---   not implemented
---
+-- - score is wrong
 --
 -- refactor stages to table
 -- 
@@ -32,16 +26,13 @@ __lua__
 --   
 
 -- game logic vars
-bets = {10,10}
+bets = {0}
 bank = 100
-hands= {{{10,0},{10,0},{10,0}},{{0,0},{10,0}}}
+hands= {{}}
 active_hand=1
-hand = {}
 dealer = {}
-score=0
-blackjack, fold = false,false
+fold = false
 blackjacks={false,false}
-game_result=0
 game_results={0,0}
 payout=0
 
@@ -71,7 +62,7 @@ endscreensx=82 endscreensy=18
 cursor_anim_frame = 0
 tempbet = 10
 
-
+debug=true
 -->8
 -- game logic functions
 function reset_game()
@@ -230,6 +221,7 @@ end -- draw_bank()
 -- draw ui functions
 function draw_game_window()
 	 -- window background
+	 if (blackjacks[active_hand]) return
 	 menuy+=active_hand*16
 	 line(menux,menuy-1,menux+sizex,menuy-1,7)
 	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
@@ -239,7 +231,7 @@ function draw_game_window()
 	 -- text
 	 print("hit",menux+2,menuy+2,7)
 	 print("stay",menux+2,menuy+10+2,7)
-	 if (#hand>2) pal(7,13)
+	 if (#hands[active_hand]>2) pal(7,13)
 	 print("fold",menux+2,menuy+20+2,7)
 	 if (bank<bets[1]) pal(7,13)
 	 print("double",menux+2,menuy+30+2,7)
@@ -316,7 +308,9 @@ function _draw()
 	end
  draw_all_cards()
 	-- player counter
-	print(count_score(hand),64,96,7)
+	for n,hand in pairs(hands) do
+		print(count_score(hand),2,58+n*16,7)
+	end
 	-- dealer counter
 	print(count_score(dealer),64,10,7)
 	-- stage 2 ui for input
@@ -326,19 +320,24 @@ function _draw()
  print("bank:"..bank,80,112)
  print("bet:"..bets[1],100,120)
  -- todo: iterate per hand
+ 
 -- debug prints
+if debug then
 print(stage,0,0,7)
 print("active_hand:"..active_hand,0,8,7)
 print("scores:",0,24,7)
 print("gmrslt:",0,32,7)
 print("bjs:",0,40,7)
 print("bets:",0,48,7)
+
 for n,hand in pairs(hands) do
  print(count_score(hand),16+n*16,24,7)
  print(game_results[n],16+n*16,32,7)
  print(blackjacks[n],16+n*16,40,7)
  print(bets[n],16+n*16,48,7)
 end
+end -- debug
+
 end
 
 -->8
@@ -453,8 +452,8 @@ if (count_score(hands[active_hand])==21) then
 end 
 
 if (bank<bets[1]) item_lim=2
---if #hands[active_hand]>2 then
--- item_lim=1 end
+if #hands[active_hand]>2 then
+ item_lim=1 end
 
 if btnp(3) and item<item_lim then
 	item+=1 end
@@ -463,7 +462,9 @@ if btnp(2) and item>0 then
 if btnp(4) then
  if item == 0 then -- hit
   hit(hands[active_hand])
- 	next_hand()
+  if count_score(hands[active_hand]) >= 21 then
+	 	next_hand()
+	 end
  elseif item == 1 then -- stand
  	next_hand()
  elseif item == 2 then -- fold
@@ -476,6 +477,14 @@ if btnp(4) then
   bank-=bets[active_hand] 
   bets[active_hand]*=2
  	next_hand()
+ elseif item == 4 then -- split
+  if #hands[active_hand] <2 then return end
+  add(hands,{})
+  add(hands[#hands],
+  hands[active_hand][2])
+  del(hands[active_hand],hands[active_hand][2])
+  bank-=bets[1]
+  add(bets,bets[1])
  end
  
 end -- menu selector
@@ -497,7 +506,8 @@ function stage4()
 --  nor has drawn blackjack
 for n,hand in pairs(hands) do
 if game_results[n] !=1 and
-count_score(dealer) <= 21 then
+count_score(dealer) <= 21 and
+blackjacks[active_hand]==false then
 	diff = count_score(hand) -
 	       count_score(dealer)
 	if diff>0 then
