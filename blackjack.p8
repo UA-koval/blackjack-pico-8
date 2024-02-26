@@ -195,83 +195,80 @@ sspr(0,32,99,66,15,63)
 palt()
 sspr(0,104,78,18,25,16)
 sspr(24,16,40,6,24,2,80,12)
-draw_window(10,10,10,10)
+draw_window(35,40,58,8)
+text_on=false
+	if frame_counter%10==0 then
+	 text_on = not text_on
+	end
+	if text_on then
+		print("press ❎ or 🅾️",37,42,7)
+	end
 end
 
 function draw_game_window()
-  menux=handx+12
-  menuy=handy-sizey-3
-	 -- window background
-	 if (blackjacks[active_hand]) return
-	 menuy+=active_hand*16
-	 line(menux,menuy-1,menux+sizex,menuy-1,7)
-	 line(menux,menuy+sizey+1,menux+sizex,menuy+sizey+1,7)
-	 line(menux-1,menuy,menux-1,menuy+sizey,7)
-	 line(menux+sizex+1,menuy,menux+sizex+1,menuy+sizey,7)
-  rectfill(menux,menuy,menux+sizex,menuy+sizey,1)
-	 -- text
-	 print("hit",menux+2,menuy+2,7)
-	 print("stay",menux+2,menuy+10+2,7)
-	 if (#hands[active_hand]>2) pal(7,13)
-	 print("fold",menux+2,menuy+20+2,7)
-	 if (bank<bets[1]) pal(7,13)
-	 print("double",menux+2,menuy+30+2,7)
-	 print("split",menux+2,menuy+40+2,7)
-	 pal()
-	 -- cursor
-		spr(23+cursor_anim_frame,menux-10,menuy+item*10)
 
-
+menux=handx+12
+menuy=handy-sizey-3
+-- window background
+if (blackjacks[active_hand]) return
+menuy+=active_hand*16
+draw_window(menux,menuy,sizex,sizey)
+-- text
+print("hit",menux+2,menuy+2,7)
+print("stay",menux+2,menuy+10+2,7)
+if (#hands[active_hand]>2) pal(7,13)
+print("fold",menux+2,menuy+20+2,7)
+if (bank<bets[1]) pal(7,13)
+print("double",menux+2,menuy+30+2,7)
+print("split",menux+2,menuy+40+2,7)
+pal()
+-- cursor
+spr(23+cursor_anim_frame,menux-10,menuy+item*10)
 	
-		menuy-=active_hand*16
+menuy-=active_hand*16
 end
 
 function draw_bet_window()
-  -- todo: graphical poker chips
-	 -- window background
-	 line(betmenux,betmenuy-1,betmenux+betsizex,betmenuy-1,7)
-	 line(betmenux,betmenuy+betsizey+1,betmenux+betsizex,betmenuy+betsizey+1,7)
-	 line(betmenux-1,betmenuy,betmenux-1,betmenuy+betsizey,7)
-	 line(betmenux+betsizex+1,betmenuy,betmenux+betsizex+1,betmenuy+betsizey,7)
-  rectfill(betmenux,betmenuy,betmenux+betsizex,betmenuy+betsizey,1)
-	 -- text
-	 print("choose your bet",betmenux+2,betmenuy+2,7)
-	 print("➡️ + 1   ⬅️ - 1",betmenux+2,betmenuy+10+2,7)
-	 print("⬆️ + 10  ⬇️ - 10",betmenux+2,betmenuy+20+2,7)
-	 print(tempbet,betmenux+32,betmenuy+30+2,7)
-	 -- cursor
-		spr(23+cursor_anim_frame,betmenux-10,betmenuy+30)
+ -- todo: graphical poker chips
+ -- window background
+ draw_window(betmenux,betmenuy,betsizex,betsizey)
+ -- text
+ print("choose your bet",betmenux+2,betmenuy+2,7)
+ print("➡️ + 1   ⬅️ - 1",betmenux+2,betmenuy+10+2,7)
+ print("⬆️ + 10  ⬇️ - 10",betmenux+2,betmenuy+20+2,7)
+ print(tempbet,betmenux+32,betmenuy+30+2,7)
+ -- cursor
+	spr(23+cursor_anim_frame,betmenux-10,betmenuy+30)
 end 
 
 function draw_game_result_window()
-  endscreeny+=active_hand*10
-	 -- window background
-	 line(endscreenx,endscreeny-1,endscreenx+endscreensx,endscreeny-1,7)
-	 line(endscreenx,endscreeny+endscreensy+1,endscreenx+endscreensx,endscreeny+endscreensy+1,7)
-	 line(endscreenx-1,endscreeny,endscreenx-1,endscreeny+endscreensy,7)
-	 line(endscreenx+endscreensx+1,endscreeny,endscreenx+endscreensx+1,endscreeny+endscreensy,7)
-  rectfill(endscreenx,endscreeny,endscreenx+endscreensx,endscreeny+endscreensy,1)
-	 -- text
-	 if game_results[active_hand]==0 then
-	  if blackjacks[active_hand] then
-	  print("blackjack! "..flr(bets[active_hand]*2.5),endscreenx+15,endscreeny+2,7)
-	  else
-		 print("you won "..bets[active_hand]*2,endscreenx+21,endscreeny+2,7)
-		 end
-	 elseif game_results[active_hand]==1 then
-	  if fold then
-	  	print("you lost "..abs(ceil(bets[active_hand]/2)),endscreenx+21,endscreeny+2,7)
-	 	elseif bank>=10 then
-		  print("you lost "..bets[active_hand],endscreenx+21,endscreeny+2,7)
-	 	else
-	 	 print("you are broke!",endscreenx+16,endscreeny+2,7)
-	 	end
-	 else
-	  print("draw!",endscreenx+32,endscreeny+2,7)
-	 end
-	 print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
-	 endscreeny-=active_hand*10
+
+endscreeny+=active_hand*10
+-- window background
+draw_window(endscreenx,endscreeny,
+							endscreensx,endscreensy)
+-- text
+if game_results[active_hand]==0 then
+ if blackjacks[active_hand] then
+ print("blackjack! "..flr(bets[active_hand]*2.5),endscreenx+15,endscreeny+2,7)
+ else
+ print("you won "..bets[active_hand]*2,endscreenx+21,endscreeny+2,7)
+ end
+elseif game_results[active_hand]==1 then
+ if fold then
+ 	print("you lost "..abs(ceil(bets[active_hand]/2)),endscreenx+21,endscreeny+2,7)
+	elseif bank>=10 then
+  print("you lost "..bets[active_hand],endscreenx+21,endscreeny+2,7)
+	else
+	 print("you are broke!",endscreenx+16,endscreeny+2,7)
+	end
+else
+ print("draw!",endscreenx+32,endscreeny+2,7)
 end
+print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
+endscreeny-=active_hand*10
+
+end -- draw_game_result_window()
 
 
 -->8
