@@ -7,16 +7,17 @@ __lua__
 -- todo:
 -- -hide dealer's counter
 --  until it is needed
--- 
--- "press start" screen:
---  - game art screen
---  - stage update
---  - draw
--- 
+--
+-- -draw cursor on active
+--  hand
+--
+
+-- - attempt refactoring to
+--   table of gamestages again
 
 -- game logic vars
 bets = {0}
-bank = 1000
+bank = 101
 hands= {{}}
 active_hand=1
 dealer = {}
@@ -33,12 +34,12 @@ item=0 item_lim=4
 
 -- objects coords
 dealerx=10 dealery=10
-handx=30   handy=50
+handx=30   handy=47
 deckx=100  decky=10
 betx=64    bety =100
-bankx=40  banky=120
+bankx=78  banky=115
 -- player choice window
-menux=60   menuy=32
+menux=94   menuy=40
 sizex=30   sizey=48
 -- bet selection window
 betmenux=31   betmenuy=32
@@ -50,6 +51,7 @@ endscreensx=82 endscreensy=18
 -- graphics vars
 cursor_anim_frame = 0
 tempbet = 10
+text_on=false
 
 debug=false
 -->8
@@ -196,7 +198,6 @@ palt()
 sspr(0,104,78,18,25,16)
 sspr(24,16,40,6,24,2,80,12)
 draw_window(35,40,58,8)
-text_on=false
 	if frame_counter%10==0 then
 	 text_on = not text_on
 	end
@@ -207,11 +208,8 @@ end
 
 function draw_game_window()
 
-menux=handx+12
-menuy=handy-sizey-3
 -- window background
 if (blackjacks[active_hand]) return
-menuy+=active_hand*16
 draw_window(menux,menuy,sizex,sizey)
 -- text
 print("hit",menux+2,menuy+2,7)
@@ -225,7 +223,6 @@ pal()
 -- cursor
 spr(23+cursor_anim_frame,menux-10,menuy+item*10)
 	
-menuy-=active_hand*16
 end
 
 function draw_bet_window()
@@ -274,47 +271,49 @@ end -- draw_game_result_window()
 -->8
 -- _draw
 function _draw()
-	rectfill(0,0,128,128,3)
 
-		-- stage selector
-	if stage==-2 then
-	 draw_title_screen() return
- elseif stage==-1 then
-  draw_bet_window()
-  draw_chips(40,84,tempbet)
-	elseif stage==2 then
-	 draw_game_window()
- elseif stage==6 then
-  draw_game_result_window()
- end
+rectfill(0,0,128,128,3)
 
-	for i=0,2 do
-	 draw_card_back(deckx,decky-i*2)
-	end
-	
-	if hidden_card then
-	 draw_card_back(dealerx+12,dealery)
-	end
-	
- draw_all_cards()
+	-- stage selector
+if stage==-2 then
+ draw_title_screen() return end
 
-	draw_chips(bankx,banky,bank)
+for i=0,2 do
+ draw_card_back(deckx,decky-i*2)
+end
 
-	for n,hand in pairs(hands) do
-		-- bets
-		draw_chips(handx+10,(handy+12)+n*16,bets[active_hand],true)
-	 -- counters
-	 rectfill(handx+1,(handy+1)+n*16,handx+9,(handy+7)+n*16,1)
-		print(count_score(hand),handx+2,(handy+2)+n*16,7)
-	end
-	
-	-- dealer counter
-	rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
-	print(count_score(dealer),dealerx-8,dealery+2,7)
-	
- print("bank:"..bank,80,112)
- print("bet:"..bets[1],100,120)
- -- todo: iterate per hand
+if hidden_card then
+ draw_card_back(dealerx+12,dealery)
+end
+
+draw_all_cards()
+
+draw_chips(bankx,banky,bank)
+
+for n,hand in pairs(hands) do
+	-- bets
+	draw_chips(handx+10,(handy+12)+n*16,bets[active_hand],true)
+ -- counters
+ rectfill(handx+1,(handy+1)+n*16,handx+9,(handy+7)+n*16,1)
+	print(count_score(hand),handx+2,(handy+2)+n*16,7)
+end
+spr(23+cursor_anim_frame,22,47+active_hand*16)
+
+-- dealer counter
+rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
+print(count_score(dealer),dealerx-8,dealery+2,7)
+
+print("bank:"..bank,86,122)
+
+if stage==-1 then
+ draw_bet_window()
+ draw_chips(40,84,tempbet)
+elseif stage==2 then
+ draw_game_window()
+elseif stage==6 then
+ draw_game_result_window()
+end
+
  
 -- debug prints
 if debug then
@@ -485,7 +484,8 @@ if btnp(4) then
  	next_hand()
  elseif item == 4 then -- split
   if #hands[active_hand] <2 
-	  or bank<bets[1] 
+	  or bank<bets[1]
+	  or #hands>3 
  	 then return end
   add(hands,{})
   add(hands[#hands],
