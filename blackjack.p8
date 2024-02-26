@@ -33,7 +33,7 @@ hidden_card = false
 item=0 item_lim=4
 
 -- objects coords
-dealerx=10 dealery=10
+dealerx=50 dealery=50
 handx=30   handy=47
 deckx=100  decky=10
 betx=64    bety =100
@@ -127,7 +127,7 @@ function draw_all_cards()
  end
  
 	for k,v in pairs(dealer) do
-	 draw_card(0+k*11,10,v[1],v[2])
+	 draw_card((dealerx-10)+k*11,dealery,v[1],v[2])
 	end
 end
 
