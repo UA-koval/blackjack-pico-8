@@ -15,6 +15,7 @@ __lua__
 -- cause: if dealer overdraws,
 --        game result does not
 --        calculate at all
+-- should be fixed now.
 --
 
 -- - attempt refactoring to
@@ -58,7 +59,7 @@ cursor_anim_frame = 0
 tempbet = 10
 text_on=false
 
-debug=true
+debug=false
 -->8
 -- game logic functions
 function reset_game()
@@ -304,7 +305,7 @@ for n,hand in pairs(hands) do
 end
 -- active hand cursor
 if stage!=-1 then
-spr(23+cursor_anim_frame,22,47+active_hand*16)
+spr(23+cursor_anim_frame,22,32+active_hand*16)
 end
 
 -- dealer counter
@@ -521,13 +522,11 @@ end --stage3()
 
 function stage4()
 -- stage 4: comparing scores
---  this stage occurs when 
---  neither sides overdrawn
---  nor has drawn blackjack
+
 for n,hand in pairs(hands) do
 if game_results[n] !=1 and
-count_score(dealer) <= 21 and
-blackjacks[active_hand]==false then
+	count_score(dealer) <= 21 and
+	blackjacks[active_hand]==false then
 	diff = count_score(hand) -
 	       count_score(dealer)
 	if diff>0 then
@@ -537,6 +536,8 @@ blackjacks[active_hand]==false then
 	else 
 		game_results[n]=2
 	end
+else
+	game_results[n]=0
 end
 next_hand()
 end
