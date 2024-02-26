@@ -6,14 +6,23 @@ __lua__
 
 -- todo:
 --
---
+-- -grey-out inaccecable fields
+
+
 -- low-priority:
 
 -- - attempt refactoring to
 --   table of gamestages again
 
+-- - add sounds from assets
+
+-- - add title music
+
 -- game logic vars
-shiva_mode = true
+
+shiva_mode = false
+fortyone = false
+
 bets = {0}
 bank = 101
 hands= {{}}
@@ -216,6 +225,10 @@ if (#hands[active_hand]>2) pal(7,13)
 print("fold",menux+2,menuy+20+2,7)
 if (bank<bets[1]) pal(7,13)
 print("double",menux+2,menuy+30+2,7)
+if bank<bets[1] or #hands>3 
+or (hands[active_hand][1][1]!=
+    hands[active_hand][2][1]
+and not shiva_mode) then pal(7,13) end
 print("split",menux+2,menuy+40+2,7)
 pal()
 -- cursor
@@ -394,6 +407,8 @@ end -- update_stage()
 
 function stagem2()
 	if btnp(4) or btnp(5) then
+	 if (btn(2)) shiva_mode=true
+	 if (btn(3)) fortyone=true
 	 stage+=1
 	end
 end
@@ -430,7 +445,7 @@ function stage0()
 for n,chand in pairs(hands) do
 
 if (#chand<2) then
-	if bets[1]==41 then
+	if bets[1]==41 and fortyone then
 		add(chand,
 		{0,flr(rnd(4))})-- ace
 		add(chand,
@@ -462,10 +477,21 @@ if (count_score(hands[active_hand])==21) then
  next_hand()
 end 
 
-if (bank<bets[1]) item_lim=2
-if #hands[active_hand]>2 then
+-- can double?
+if bank<bets[1] then
+ item_lim=2
+-- split check
+elseif #hands>3 
+or (hands[active_hand][1][1]!=
+    hands[active_hand][2][1]
+and not shiva_mode) then
+ item_lim=3
+-- only hit and stay
+elseif #hands[active_hand]>2 then
  item_lim=1
- else item_lim=4 end
+else
+	item_lim=4
+end
 
 if btnp(3) and item<item_lim then
 	item+=1 end
@@ -492,8 +518,7 @@ if btnp(4) then
   bets[active_hand]*=2
  	next_hand()
  elseif item == 4 then -- split
-  if #hands[active_hand] <2 
-	  or bank<bets[1]
+  if bank<bets[1]
 	  or #hands>3 
  	 then return end
  	if hands[active_hand][1][1]!=
