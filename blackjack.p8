@@ -6,9 +6,6 @@ __lua__
 
 -- todo:
 --
--- - give card on split
---   automatically
---
 --
 -- low-priority:
 
@@ -16,14 +13,15 @@ __lua__
 --   table of gamestages again
 
 -- game logic vars
+shiva_mode = true
 bets = {0}
 bank = 101
 hands= {{}}
 active_hand=1
 dealer = {}
 fold = false
-blackjacks={false,false}
-game_results={0,0}
+blackjacks={false,false,false,false}
+game_results={0,0,0,0}
 payout=0
 
 -- technical vars
@@ -45,7 +43,7 @@ sizex=30   sizey=48
 betmenux=31   betmenuy=32
 betsizex=66   betsizey=40
 -- game result window
-endscreenx=23 endscreeny=32
+endscreenx=23 endscreeny=46
 endscreensx=82 endscreensy=18
 
 -- graphics vars
@@ -240,7 +238,6 @@ end
 
 function draw_game_result_window()
 
-endscreeny+=active_hand*10
 -- window background
 draw_window(endscreenx,endscreeny,
 							endscreensx,endscreensy)
@@ -263,7 +260,6 @@ else
  print("draw!",endscreenx+32,endscreeny+2,7)
 end
 print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
-endscreeny-=active_hand*10
 
 end -- draw_game_result_window()
 
@@ -292,7 +288,8 @@ draw_chips(bankx,banky,bank)
 
 for n,hand in pairs(hands) do
 	-- bets
-	draw_chips(handx+10,(handy+12)+n*16,bets[active_hand],true)
+	draw_chips(handx+10,
+	(handy+12)+n*16,bets[n],true)
  -- counters
  rectfill(handx+1,(handy+1)+n*16,handx+9,(handy+7)+n*16,1)
 	print(count_score(hand),handx+2,(handy+2)+n*16,7)
@@ -329,7 +326,10 @@ print("scores:",0,24,7)
 print("gmrslt:",0,32,7)
 print("bjs:",0,40,7)
 print("bets:",0,48,7)
-
+if #hands[active_hand]>1 then
+print(hands[active_hand][1][1],0,56,7)
+print(hands[active_hand][2][1],0,64,7)
+end
 for n,hand in pairs(hands) do
  print(count_score(hand),16+n*16,24,7)
  print(game_results[n],16+n*16,32,7)
@@ -481,7 +481,9 @@ if btnp(4) then
  	next_hand()
  elseif item == 2 then -- fold
   if #hands==1 then
-	 	fold=true
+	 fold=true
+	 game_results[active_hand]=1
+	 stage=5
 	 end
 
  elseif item == 3 then -- double
@@ -494,12 +496,19 @@ if btnp(4) then
 	  or bank<bets[1]
 	  or #hands>3 
  	 then return end
+ 	if hands[active_hand][1][1]!=
+ 	   hands[active_hand][2][1]
+ 	and not shiva_mode then
+ 	return	end
+ 	
   add(hands,{})
   add(hands[#hands],
   hands[active_hand][2])
   del(hands[active_hand],hands[active_hand][2])
   bank-=bets[1]
-  add(bets,bets[1])
+  add(bets,bets[active_hand])
+  hit(hands[active_hand]) 
+  hit(hands[#hands]) 
  end
  
 end -- menu selector
@@ -520,7 +529,7 @@ function stage4()
 for n,hand in pairs(hands) do
 if game_results[n] !=1 and
 	count_score(dealer) <= 21 and
-	blackjacks[active_hand]==false then
+	blackjacks[active_hand]!=true then
 	diff = count_score(hand) -
 	       count_score(dealer)
 	if diff>0 then
