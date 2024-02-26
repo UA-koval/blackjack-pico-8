@@ -6,17 +6,11 @@ __lua__
 
 -- todo:
 --
--- -draw cursor on active
---  hand, wrong placement
+-- - give card on split
+--   automatically
 --
--- bug: splits always show draw,
---      and act as a loss
 --
--- cause: if dealer overdraws,
---        game result does not
---        calculate at all
--- should be fixed now.
---
+-- low-priority:
 
 -- - attempt refactoring to
 --   table of gamestages again
@@ -39,11 +33,11 @@ hidden_card = false
 item=0 item_lim=4
 
 -- objects coords
-dealerx=40 dealery=2
+dealerx=40 dealery=6
 handx=30   handy=31
-deckx=100  decky=10
+deckx=16   decky=6
 betx=64    bety =100
-bankx=78  banky=115
+bankx=78   banky=115
 -- player choice window
 menux=94   menuy=40
 sizex=30   sizey=48
@@ -305,7 +299,7 @@ for n,hand in pairs(hands) do
 end
 -- active hand cursor
 if stage!=-1 then
-spr(23+cursor_anim_frame,22,32+active_hand*16)
+spr(23+cursor_anim_frame,22,31+active_hand*16)
 end
 
 -- dealer counter
