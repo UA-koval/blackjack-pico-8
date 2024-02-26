@@ -40,14 +40,14 @@ hidden_card = false
 item=0 item_lim=4
 
 -- objects coords
-dealerx=40 dealery=6
-handx=30   handy=31
-deckx=16   decky=6
+dealerx=42 dealery=17
+handx=32   handy=33
+deckx=20   decky=17
 betx=64    bety =100
-bankx=78   banky=115
+bankx=56   banky=115
 -- player choice window
-menux=94   menuy=40
-sizex=30   sizey=48
+menux=97   menuy=40
+sizex=28   sizey=48
 -- bet selection window
 betmenux=31   betmenuy=32
 betsizex=66   betsizey=40
@@ -61,6 +61,7 @@ tempbet = 10
 text_on=false
 
 debug=false
+grid=true
 -->8
 -- game logic functions
 function reset_game()
@@ -232,12 +233,11 @@ and not shiva_mode) then pal(7,13) end
 print("split",menux+2,menuy+40+2,7)
 pal()
 -- cursor
-spr(23+cursor_anim_frame,menux-10,menuy+item*10)
+spr(23+cursor_anim_frame,menux-10,menuy+1+item*10)
 	
 end
 
 function draw_bet_window()
- -- todo: graphical poker chips
  -- window background
  draw_window(betmenux,betmenuy,betsizex,betsizey)
  -- text
@@ -309,7 +309,7 @@ for n,hand in pairs(hands) do
 end
 -- active hand cursor
 if stage!=-1 then
-spr(23+cursor_anim_frame,22,31+active_hand*16)
+spr(23+cursor_anim_frame,handx-8,handy+1+active_hand*16)
 end
 
 -- dealer counter
@@ -318,7 +318,7 @@ rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
 print(count_score(dealer),dealerx-8,dealery+2,7)
 end
 
-print("bank:"..bank,86,122)
+print("bank:"..bank,bankx,banky)
 
 if stage==-1 then
  draw_bet_window()
@@ -329,7 +329,18 @@ elseif stage==6 then
  draw_game_result_window()
 end
 
- 
+if grid then
+-- grid
+-- vert
+line(0,64,128,64,12)
+line(0,32,128,32,12)
+line(0,96,128,96,12)
+-- horz
+line(64,0,64,128,12)
+line(32,0,32,128,12)
+line(96,0,96,128,12)
+end
+
 -- debug prints
 if debug then
 pal(7,0)
