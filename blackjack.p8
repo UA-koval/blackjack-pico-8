@@ -5,11 +5,16 @@ __lua__
 -- by koval
 
 -- todo:
--- -hide dealer's counter
---  until it is needed
 --
 -- -draw cursor on active
---  hand
+--  hand, wrong placement
+--
+-- bug: splits always show draw,
+--      and act as a loss
+--
+-- cause: if dealer overdraws,
+--        game result does not
+--        calculate at all
 --
 
 -- - attempt refactoring to
@@ -33,8 +38,8 @@ hidden_card = false
 item=0 item_lim=4
 
 -- objects coords
-dealerx=50 dealery=50
-handx=30   handy=47
+dealerx=40 dealery=2
+handx=30   handy=31
 deckx=100  decky=10
 betx=64    bety =100
 bankx=78  banky=115
@@ -53,7 +58,7 @@ cursor_anim_frame = 0
 tempbet = 10
 text_on=false
 
-debug=false
+debug=true
 -->8
 -- game logic functions
 function reset_game()
@@ -297,11 +302,16 @@ for n,hand in pairs(hands) do
  rectfill(handx+1,(handy+1)+n*16,handx+9,(handy+7)+n*16,1)
 	print(count_score(hand),handx+2,(handy+2)+n*16,7)
 end
+-- active hand cursor
+if stage!=-1 then
 spr(23+cursor_anim_frame,22,47+active_hand*16)
+end
 
 -- dealer counter
+if stage>0 then
 rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
 print(count_score(dealer),dealerx-8,dealery+2,7)
+end
 
 print("bank:"..bank,86,122)
 
@@ -317,7 +327,8 @@ end
  
 -- debug prints
 if debug then
-print(stage,0,0,7)
+pal(7,0)
+print("stage: "..stage,0,0,7)
 print("active_hand:"..active_hand,0,8,7)
 print("scores:",0,24,7)
 print("gmrslt:",0,32,7)
@@ -330,6 +341,7 @@ for n,hand in pairs(hands) do
  print(blackjacks[n],16+n*16,40,7)
  print(bets[n],16+n*16,48,7)
 end
+pal()
 end -- debug
 
 end
