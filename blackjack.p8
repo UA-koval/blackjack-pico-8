@@ -6,16 +6,13 @@ __lua__
 
 -- todo:
 --
---
+-- *crickets*
+-- 
 --
 -- low-priority:
 --
--- - attempt refactoring to
---   table of gamestages again
---
 -- - add sounds from assets
 --
--- - add title music
 
 -- game logic vars
 
@@ -35,7 +32,7 @@ tempbank=0
 
 -- technical vars
 frame_counter = 1
-stage = -2
+stage = 1
 hidden_card = false
 item=0 item_lim=4
 
@@ -68,7 +65,7 @@ function reset_game()
 hands = {{}}
 game_results = {0}
 dealer = {}
-stage=-1
+stage=2
 blackjack=false fold=false
 blackjacks={false}
 hidden_card=false
@@ -120,7 +117,7 @@ function next_hand()
 	if #hands!=active_hand then
 		active_hand+=1
 	else 
-	if (stage==6) reset_game() stage=-1 return
+	if (stage==9) reset_game() stage=2 return
   stage+=1
 	 active_hand=1
 	end
@@ -312,7 +309,7 @@ function _draw()
 rectfill(0,0,128,128,3)
 
 	-- stage selector
-if stage==-2 then
+if stage==1 then
  ui.title_screen() return end
 
 for i=0,2 do
@@ -335,12 +332,12 @@ for n,hand in pairs(hands) do
 	print(count_score(hand),handx+2,(handy+2)+n*16,7)
 end
 -- active hand cursor
-if stage!=-1 then
+if stage!=2 then
 spr(23+cursor_anim_frame,handx-8,handy+1+active_hand*16)
 end
 
 -- dealer counter
-if stage>0 then
+if stage>3 then
 rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
 print(count_score(dealer),dealerx-8,dealery+2,7)
 end
@@ -348,11 +345,11 @@ end
 print("bank:"..bank,
 	bankx+8,banky+6)
 
-if stage==-1 then
+if stage==2 then
  ui.bets()
-elseif stage==2 then
+elseif stage==5 then
  ui.game_window()
-elseif stage==6 then
+elseif stage==9 then
  ui.game_results()
 end
 
@@ -396,62 +393,26 @@ end
 -- stage functions
 function update_stage()
 
-if stage==-2 then
--- stage -2: title screen
- stagem2()
-
-elseif stage==-1 then
--- stage -1: set bets
- stagem1()
-
-elseif stage==2 then
--- stage 2: player's choice
- stage2()
-
-elseif stage==6 then
--- stage 6: game result screen
- stage6()
+slow_stages = {3,4,6,7,8}
+if del(slow_stages,stage)==stage then
+	if (frame_counter%20!=0) return
 end
-
--- from this point on, program
--- only executes every 20 frames
-if (frame_counter%20!=0) return
-
--- stage 0: give player cards
-	if stage==0 then
-		stage0()
-
-	elseif stage==1 then
-	-- stage 1: give dealer card
-		stage1()
-
-elseif stage==3 then
--- stage 3: dealer's draw
-stage3()
-
-elseif stage==4 then
--- stage 4: comparing scores
---  this stage occurs when 
---  neither sides overdrawn
---  nor has drawn blackjack
-stage4()
-
-elseif stage==5 then
--- stage 5: payout
-stage5()
-end -- stage selector
+stages[stage]()
 
 end -- update_stage()
 
-function stagem2()
+stages = {
+
+function()
+-- stage -2: title screen
 	if btnp(4) or btnp(5) then
 	 if (btn(2)) shiva_mode=true
 	 if (btn(3)) fortyone=true
 	 stage+=1
 	end
-end
+end, --stage -2
 
-function stagem1()
+function()
 -- stage -1: set bets
 tempbank=tempbet
  if btnp(0) then
@@ -478,9 +439,9 @@ tempbank=tempbet
  end
 
 if (tempbet>bank) tempbet=bank
-end -- stagem1()
+end, -- stage -1
 
-function stage0()
+function()
 -- stage 0: give player cards
 for n,chand in pairs(hands) do
 
@@ -497,18 +458,18 @@ if (#chand<2) then
 end 
 end --foreach hand 
 stage+=1
-end --stage0()
+end, --stage0()
 
-function stage1()
+function()
 -- stage 1: give dealer card
 if (#dealer<1) then
  add(dealer,generate_card())
 elseif hidden_card==false then
 	hidden_card = true
 else stage+=1 end
-end -- stage1()
+end, -- stage1()
 
-function stage2()
+function()
 -- stage 2: player's choice
 
 -- bj test
@@ -549,7 +510,7 @@ if btnp(4) then
   if #hands==1 then
 	 fold=true
 	 game_results[active_hand]=1
-	 stage=5
+	 stage=8
 	 end
 
  elseif item == 3 then -- double
@@ -577,18 +538,20 @@ if btnp(4) then
  end
  
 end -- menu selector
-end -- stage2()
 
-function stage3()
+end, -- stage2()
+
+function()
 -- stage 3: dealer's draw
 if #dealer==1 then
  hit(dealer)
 elseif count_score(dealer) < 17 then
  hit(dealer)
 else stage+=1 end
-end --stage3()
 
-function stage4()
+end, --stage3()
+
+function()
 -- stage 4: comparing scores
 
 for n,hand in pairs(hands) do
@@ -608,9 +571,10 @@ if game_results[n] !=1 and
 end
 next_hand()
 end
-end -- stage4()
 
-function stage5()
+end, -- stage4()
+
+function()
 -- stage 5: payout
 --  0 - win
 --  1 - loss
@@ -638,15 +602,16 @@ end --iterator
 bets[n]=0
 active_hand=1
 stage+=1
-end -- stage5
+end, -- stage 5
 
-function stage6()
+function()
 -- stage 6: game result screen
 if btnp(4) then 
 	if bank<10 then run() end
 next_hand()
 end
-end --stage6()
+
+end} --stage6()
 -->8
 -- _update()
 function _update()
