@@ -60,7 +60,7 @@ cursor_anim_frame = 0
 tempbet = 10
 text_on=false
 
-debug=false
+debug=true
 grid=true
 -->8
 -- game logic functions
@@ -576,7 +576,8 @@ function stage4()
 for n,hand in pairs(hands) do
 if game_results[n] !=1 and
 	count_score(dealer) <= 21 and
-	blackjacks[active_hand]!=true then
+	blackjacks[active_hand]!=true
+	 then
 	diff = count_score(hand) -
 	       count_score(dealer)
 	if diff>0 then
@@ -586,8 +587,6 @@ if game_results[n] !=1 and
 	else 
 		game_results[n]=2
 	end
-else
-	game_results[n]=0
 end
 next_hand()
 end
