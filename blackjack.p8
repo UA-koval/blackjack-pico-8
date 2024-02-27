@@ -213,6 +213,27 @@ draw_window(35,40,58,8)
 	end
 end, --title_screen()
 
+transition = function()
+
+temp_draw = _draw
+tempfc = 0
+line(0,127,127,127,3)
+line(0,126,126,126,3)
+_draw = function()
+ tempfc+=1
+	memcpy(0x6000,
+ 	0x6000+128,
+ 	8064)
+	if tempfc>64 or (tempfc>1 
+	and (btnp(4) or btnp(5))) then
+ 	_draw=temp_draw
+ 	stage+=1
+ 	end
+end -- _draw()
+
+
+end, -- transition()
+
 game_window = function()
 
 -- window background
@@ -411,24 +432,9 @@ function()
 	if btnp(4) or btnp(5) then
 	 if (btn(2)) shiva_mode=true
 	 if (btn(3)) fortyone=true
-	 --stage+=1
+	 
 	 if temp_draw==nil then
-	 temp_draw = _draw
-	 tempfc = 0
-	 line(0,127,127,127,3)
-	 line(0,126,126,126,3)
-	 _draw = function()
-	  tempfc+=1
-	 	memcpy(0x6000,
-	 	0x6000+128,
-	 	8064)
-	 	printh(tempfc)
-	 	if tempfc>64 or (tempfc>1 
-	 	and (btnp(4) or btnp(5))) then
-	  	_draw=temp_draw
-	  	stage+=1
-	  	end
-	 end -- _draw()
+	  ui.transition()
 	 end -- check if temp_draw is nil
 	end
 end, --stage -2
