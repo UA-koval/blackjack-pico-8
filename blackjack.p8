@@ -199,7 +199,8 @@ rectfill(x,y,x+sx,y+sy,1)
 end
 -->8
 -- draw ui functions
-function draw_title_screen()
+ui = {
+function title_screen()
 palt(0,false)
 sspr(0,32,99,66,15,63)
 palt()
@@ -210,34 +211,48 @@ draw_window(35,40,58,8)
 	 text_on = not text_on
 	end
 	if text_on then
-		print("press ❎ or 🅾️",37,42,7)
+		print("press ❎ or 🅾️",
+			37,42,7)
 	end
-end
+end, --title_screen()
 
-function draw_game_window()
+function game_window()
 
 -- window background
-if (blackjacks[active_hand]) return
-draw_window(menux,menuy,sizex,sizey)
+if (blackjacks[active_hand])
+ return
+draw_window(menux,menuy,
+ sizex,sizey)
 -- text
-print("hit",menux+2,menuy+2,7)
-print("stay",menux+2,menuy+10+2,7)
-if (#hands[active_hand]>2) pal(7,13)
-print("fold",menux+2,menuy+20+2,7)
+print("hit",
+	menux+2,menuy+2,7)
+print("stay",
+	menux+2,menuy+10+2,7)
+-- grey-out after hit
+if (#hands[active_hand]>2)
+ pal(7,13)
+print("fold",
+	menux+2,menuy+20+2,7)
+-- grey-out double
 if (bank<bets[1]) pal(7,13)
-print("double",menux+2,menuy+30+2,7)
+print("double",
+	menux+2,menuy+30+2,7)
+-- split grey-out
 if bank<bets[1] or #hands>3 
 or (hands[active_hand][1][1]!=
     hands[active_hand][2][1]
-and not shiva_mode) then pal(7,13) end
-print("split",menux+2,menuy+40+2,7)
+and not shiva_mode) then
+ pal(7,13) end
+print("split",
+	menux+2,menuy+40+2,7)
 pal()
 -- cursor
-spr(23+cursor_anim_frame,menux-10,menuy+1+item*10)
+spr(23+cursor_anim_frame,
+ menux-10,menuy+1+item*10)
 	
-end
+end, --game_window(),
 
-function draw_bet_window()
+function bets()
  -- window background
  draw_window(betmenux,betmenuy,
  	betsizex,betsizey)
@@ -256,9 +271,9 @@ function draw_bet_window()
  -- cursor
 	spr(23+cursor_anim_frame,
 		betmenux-10,betmenuy+30)
-end 
+end, --bets() 
 
-function draw_game_result_window()
+function game_results()
 
 -- window background
 draw_window(endscreenx,endscreeny,
@@ -266,25 +281,31 @@ draw_window(endscreenx,endscreeny,
 -- text
 if game_results[active_hand]==0 then
  if blackjacks[active_hand] then
- print("blackjack! "..flr(bets[active_hand]*2.5),endscreenx+15,endscreeny+2,7)
+ print("blackjack! "..flr(bets[active_hand]*2.5),
+	 endscreenx+15,endscreeny+2,7)
  else
- print("you won "..bets[active_hand]*2,endscreenx+21,endscreeny+2,7)
+  print("you won "..bets[active_hand]*2,
+	  endscreenx+21,endscreeny+2,7)
  end
 elseif game_results[active_hand]==1 then
  if fold then
- 	print("you lost "..abs(ceil(bets[active_hand]/2)),endscreenx+21,endscreeny+2,7)
+ 	print("you lost "..abs(ceil(bets[active_hand]/2)),
+ 		endscreenx+21,endscreeny+2,7)
 	elseif bank>=10 then
-  print("you lost "..bets[active_hand],endscreenx+21,endscreeny+2,7)
+  print("you lost "..bets[active_hand],
+  	endscreenx+21,endscreeny+2,7)
 	else
-	 print("you are broke!",endscreenx+16,endscreeny+2,7)
+	 print("you are broke!",
+	 	endscreenx+16,endscreeny+2,7)
 	end
 else
- print("draw!",endscreenx+32,endscreeny+2,7)
+ print("draw!",
+ endscreenx+32,endscreeny+2,7)
 end
-print("press ❎ to continue",endscreenx+2,endscreeny+10+2,7)
+print("press ❎ to continue",
+endscreenx+2,endscreeny+10+2,7)
 
-end -- draw_game_result_window()
-
+end} -- game_results()
 
 -->8
 -- _draw
@@ -294,7 +315,7 @@ rectfill(0,0,128,128,3)
 
 	-- stage selector
 if stage==-2 then
- draw_title_screen() return end
+ ui.title_screen() return end
 
 for i=0,2 do
  draw_card_back(deckx,decky-i*2)
@@ -305,7 +326,6 @@ if hidden_card then
 end
 
 draw_all_cards()
-
 draw_chips(bankx,banky,bank-tempbank)
 
 for n,hand in pairs(hands) do
@@ -331,11 +351,11 @@ print("bank:"..bank,
 	bankx+8,banky+6)
 
 if stage==-1 then
- draw_bet_window()
+ ui.bets()
 elseif stage==2 then
- draw_game_window()
+ ui.game_window()
 elseif stage==6 then
- draw_game_result_window()
+ ui.game_results()
 end
 
 if grid then
