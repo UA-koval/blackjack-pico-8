@@ -200,7 +200,7 @@ end
 -->8
 -- draw ui functions
 ui = {
-function title_screen()
+title_screen = function()
 palt(0,false)
 sspr(0,32,99,66,15,63)
 palt()
@@ -216,11 +216,10 @@ draw_window(35,40,58,8)
 	end
 end, --title_screen()
 
-function game_window()
+game_window = function()
 
 -- window background
-if (blackjacks[active_hand])
- return
+if (blackjacks[active_hand]) return
 draw_window(menux,menuy,
  sizex,sizey)
 -- text
@@ -229,8 +228,7 @@ print("hit",
 print("stay",
 	menux+2,menuy+10+2,7)
 -- grey-out after hit
-if (#hands[active_hand]>2)
- pal(7,13)
+if (#hands[active_hand]>2) pal(7,13)
 print("fold",
 	menux+2,menuy+20+2,7)
 -- grey-out double
@@ -252,7 +250,7 @@ spr(23+cursor_anim_frame,
 	
 end, --game_window(),
 
-function bets()
+bets = function()
  -- window background
  draw_window(betmenux,betmenuy,
  	betsizex,betsizey)
@@ -273,7 +271,7 @@ function bets()
 		betmenux-10,betmenuy+30)
 end, --bets() 
 
-function game_results()
+game_results = function()
 
 -- window background
 draw_window(endscreenx,endscreeny,
