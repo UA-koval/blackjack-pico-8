@@ -53,15 +53,15 @@ betmenux=33   betmenuy=33
 betsizex=62   betsizey=37
 -- game result window
 endscreenx=23 endscreeny=46
-endscreensx=82 endscreensy=18
+endscreensx=82 endscreensy=17
 
 -- graphics vars
 cursor_anim_frame = 0
 tempbet = 10
 text_on=false
 
-debug=true
-grid=true
+debug=false
+grid=false
 -->8
 -- game logic functions
 function reset_game()
