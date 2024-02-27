@@ -6,16 +6,15 @@ __lua__
 
 -- todo:
 --
--- -grey-out inaccecable fields
-
-
+--
+--
 -- low-priority:
-
+--
 -- - attempt refactoring to
 --   table of gamestages again
-
+--
 -- - add sounds from assets
-
+--
 -- - add title music
 
 -- game logic vars
@@ -32,6 +31,7 @@ fold = false
 blackjacks={false,false,false,false}
 game_results={0,0,0,0}
 payout=0
+tempbank=0
 
 -- technical vars
 frame_counter = 1
@@ -49,8 +49,8 @@ bankx=56   banky=115
 menux=97   menuy=40
 sizex=28   sizey=48
 -- bet selection window
-betmenux=31   betmenuy=32
-betsizex=66   betsizey=40
+betmenux=33   betmenuy=33
+betsizex=62   betsizey=37
 -- game result window
 endscreenx=23 endscreeny=46
 endscreensx=82 endscreensy=18
@@ -239,14 +239,23 @@ end
 
 function draw_bet_window()
  -- window background
- draw_window(betmenux,betmenuy,betsizex,betsizey)
+ draw_window(betmenux,betmenuy,
+ 	betsizex,betsizey)
  -- text
- print("choose your bet",betmenux+2,betmenuy+2,7)
- print("➡️ + 1   ⬅️ - 1",betmenux+2,betmenuy+10+2,7)
- print("⬆️ + 10  ⬇️ - 10",betmenux+2,betmenuy+20+2,7)
- print(tempbet,betmenux+32,betmenuy+30+2,7)
+ print("choose your bet",
+	 betmenux+2,betmenuy+2,7)
+ print("➡️ + 1  ⬅️ - 1",
+	 betmenux+2,betmenuy+10+2,7)
+ print("⬆️ + 10 ⬇️ - 10",
+	 betmenux+2,betmenuy+20+2,7)
+ print(tempbet,betmenux+28,
+ 	betmenuy+31,7)
+ -- chips
+ draw_chips(
+ betmenux+4,betmenuy+60,tempbet)
  -- cursor
-	spr(23+cursor_anim_frame,betmenux-10,betmenuy+30)
+	spr(23+cursor_anim_frame,
+		betmenux-10,betmenuy+30)
 end 
 
 function draw_game_result_window()
@@ -297,7 +306,7 @@ end
 
 draw_all_cards()
 
-draw_chips(bankx,banky,bank)
+draw_chips(bankx,banky,bank-tempbank)
 
 for n,hand in pairs(hands) do
 	-- bets
@@ -318,11 +327,11 @@ rectfill(dealerx-9,dealery+1,dealerx-1,dealery+7,1)
 print(count_score(dealer),dealerx-8,dealery+2,7)
 end
 
-print("bank:"..bank,bankx,banky)
+print("bank:"..bank,
+	bankx+8,banky+6)
 
 if stage==-1 then
  draw_bet_window()
- draw_chips(40,84,tempbet)
 elseif stage==2 then
  draw_game_window()
 elseif stage==6 then
@@ -426,6 +435,7 @@ end
 
 function stagem1()
 -- stage -1: set bets
+tempbank=tempbet
  if btnp(0) then
   if tempbet>10 then
   	tempbet-=1
@@ -445,6 +455,7 @@ function stagem1()
  elseif btnp(4) then
   bets[1]=tempbet
   bank-=tempbet
+  tempbank=0
   stage+=1
  end
 
@@ -885,4 +896,11 @@ __label__
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+
+__sfx__
+010200000c6000e60010600116001360015600026000460005600006001360015600176000060002600046000560007600096000b600000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 42424344
 
