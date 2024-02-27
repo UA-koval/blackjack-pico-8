@@ -393,6 +393,9 @@ end
 -- stage functions
 function update_stage()
 
+-- skip slow stage
+if (btnp(4)) frame_counter=20
+
 slow_stages = {3,4,6,7,8}
 if del(slow_stages,stage)==stage then
 	if (frame_counter%20!=0) return
